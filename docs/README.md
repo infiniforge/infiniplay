@@ -1,0 +1,11 @@
+# infiniplay documentation index
+
+Planned universal-emulator frontend using the Libretro app as its backend.
+
+## Start here
+
+- [Project overview and standalone build](../README.md).
+- [Repository-specific agent guidance](../AGENTS.md).
+- [InfiniForge ecosystem map](ECOSYSTEM.md) — generated from the organization manifest; do not edit this copy.
+
+This repository is currently a planned placeholder. It has no implemented public API or standalone build documentation yet.
