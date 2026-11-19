@@ -56,6 +56,10 @@ class Core:
 
 def main():
  if not LIBS.is_dir():print('Native execution requires the Termux native build');return
+ # The app loader searches its nativeLibraryDir; Termux's Python loader does not.
+ # Load the staged runtime by absolute path and retain it for the entire probe.
+ # RTLD_GLOBAL makes its SONAME available to each core's DT_NEEDED entries.
+ runtime=C.CDLL(str(LIBS/'libc++_shared.so'),mode=C.RTLD_GLOBAL)
  with tempfile.TemporaryDirectory(prefix='core-test-',dir=ROOT/'build') as tmp:
     directory=Path(tmp)
     # NROM: SEI; CLD; INC $00; JMP $8002. Original generated code only.
