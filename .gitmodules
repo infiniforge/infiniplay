@@ -1,0 +1,48 @@
+[submodule "third_party/quicknes"]
+	path = third_party/quicknes
+	url = https://github.com/libretro/QuickNES_Core.git
+[submodule "third_party/gambatte"]
+	path = third_party/gambatte
+	url = https://github.com/libretro/gambatte-libretro.git
+[submodule "third_party/libretrodroid"]
+	path = third_party/libretrodroid
+	url = https://github.com/Swordfish90/LibretroDroid.git
+[submodule "libraries/libinfiniselect"]
+	path = libraries/libinfiniselect
+	url = https://github.com/infiniforge/libinfiniselect.git
+[submodule "libraries/libinfinistream"]
+	path = libraries/libinfinistream
+	url = https://github.com/infiniforge/libinfinistream.git
+[submodule "third_party/fceumm"]
+	path = third_party/fceumm
+	url = https://github.com/libretro/libretro-fceumm.git
+[submodule "third_party/genesis"]
+	path = third_party/genesis
+	url = https://github.com/libretro/Genesis-Plus-GX.git
+[submodule "third_party/picodrive"]
+	path = third_party/picodrive
+	url = https://github.com/libretro/picodrive.git
+[submodule "third_party/pce"]
+	path = third_party/pce
+	url = https://github.com/libretro/beetle-pce-fast-libretro.git
+[submodule "third_party/handy"]
+	path = third_party/handy
+	url = https://github.com/libretro/libretro-handy.git
+[submodule "third_party/vb"]
+	path = third_party/vb
+	url = https://github.com/libretro/beetle-vb-libretro.git
+[submodule "third_party/stella"]
+	path = third_party/stella
+	url = https://github.com/libretro/stella2014-libretro.git
+[submodule "third_party/prosystem"]
+	path = third_party/prosystem
+	url = https://github.com/libretro/prosystem-libretro.git
+[submodule "third_party/snes9x"]
+	path = third_party/snes9x
+	url = https://github.com/libretro/snes9x2010.git
+[submodule "third_party/atari800"]
+	path = third_party/atari800
+	url = https://github.com/libretro/libretro-atari800.git
+[submodule "third_party/geolith"]
+	path = third_party/geolith
+	url = https://github.com/libretro/geolith-libretro.git

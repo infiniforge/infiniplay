@@ -1,13 +1,13 @@
-# infiniplay documentation index
+# InfiniPlay documentation
 
-Planned universal-emulator frontend using the Libretro app as its backend.
-
-## Start here
-
-- [Application description and implementation status](APPLICATION.md).
-
-- [Project overview and standalone build](../README.md).
-- [Repository-specific agent guidance](../AGENTS.md).
-- [InfiniForge ecosystem map](ECOSYSTEM.md) — generated from the organization manifest; do not edit this copy.
-
-This repository is currently a planned placeholder. It has no implemented public API or standalone build documentation yet.
+- [Three-state system roadmap](ROADMAP.md)
+- [Overview and build](../README.md)
+- [Application responsibilities and status](APPLICATION.md)
+- [Bundled systems and firmware](systems.md)
+- [Architecture, input and rendering](architecture.md)
+- [Storage, firmware and multi-disc imports](storage.md)
+- [Validation and remaining device checks](validation.md)
+- [Acknowledgments](acknowledgments.md)
+- [Third-party source and license notices](third-party.md)
+- [Repository guidance](../AGENTS.md)
+- [Generated ecosystem map](ECOSYSTEM.md)

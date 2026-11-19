@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "repositories": [
+    {
+      "name": "atari800",
+      "path": "third_party/atari800",
+      "url": "https://github.com/libretro/libretro-atari800.git",
+      "commit": "4e7fbc73765c1a9670c7506616046ad1d4ccda51"
+    },
+    {
+      "name": "fceumm",
+      "path": "third_party/fceumm",
+      "url": "https://github.com/libretro/libretro-fceumm.git",
+      "commit": "77468e568d9fe9c48d684ca911f1a3fe7259fdf7"
+    },
+    {
+      "name": "gambatte",
+      "path": "third_party/gambatte",
+      "url": "https://github.com/libretro/gambatte-libretro.git",
+      "commit": "77f2567d718b8973d02caa2daa8dce4953faf811"
+    },
+    {
+      "name": "genesis",
+      "path": "third_party/genesis",
+      "url": "https://github.com/libretro/Genesis-Plus-GX.git",
+      "commit": "b9c2316441978d4015ba30e9a95d9b0e6f8ee981"
+    },
+    {
+      "name": "geolith",
+      "path": "third_party/geolith",
+      "url": "https://github.com/libretro/geolith-libretro.git",
+      "commit": "2dc88e3fa72ff404213a65d6eb5bb33baa687f73"
+    },
+    {
+      "name": "handy",
+      "path": "third_party/handy",
+      "url": "https://github.com/libretro/libretro-handy.git",
+      "commit": "bc55d462f0b2d6b073ea93dc552ebd73cec60fd1"
+    },
+    {
+      "name": "libretrodroid",
+      "path": "third_party/libretrodroid",
+      "url": "https://github.com/Swordfish90/LibretroDroid.git",
+      "commit": "0ebd299624bfd51a0a1336dd0a2c56fe7ddbc0e3"
+    },
+    {
+      "name": "pce",
+      "path": "third_party/pce",
+      "url": "https://github.com/libretro/beetle-pce-fast-libretro.git",
+      "commit": "2de1ce1c3f237b161c126c54ba407990bb86d1e9"
+    },
+    {
+      "name": "picodrive",
+      "path": "third_party/picodrive",
+      "url": "https://github.com/libretro/picodrive.git",
+      "commit": "1890c2932234c9d30f4cd3851d02228baae8f09e"
+    },
+    {
+      "name": "prosystem",
+      "path": "third_party/prosystem",
+      "url": "https://github.com/libretro/prosystem-libretro.git",
+      "commit": "8a88014287c7a01cd568067e5a557d0a2b2a051f"
+    },
+    {
+      "name": "quicknes",
+      "path": "third_party/quicknes",
+      "url": "https://github.com/libretro/QuickNES_Core.git",
+      "commit": "26bb785c9deddb66a17717b21bb4e328f03ade32"
+    },
+    {
+      "name": "snes9x",
+      "path": "third_party/snes9x",
+      "url": "https://github.com/libretro/snes9x2010.git",
+      "commit": "82904a95e9bab2c3e63395e4b9ece8fdca8b785d"
+    },
+    {
+      "name": "stella",
+      "path": "third_party/stella",
+      "url": "https://github.com/libretro/stella2014-libretro.git",
+      "commit": "7d1361e407e63f29e52892655069e5fb4096e691"
+    },
+    {
+      "name": "vb",
+      "path": "third_party/vb",
+      "url": "https://github.com/libretro/beetle-vb-libretro.git",
+      "commit": "d5ae54c8e23b573a3b34e888b2d48a588027e92c"
+    }
+  ]
+}
