@@ -17,7 +17,7 @@ The first batch targets systems through the SNES generation, including Sega's CD
 | Super Nintendo | Snes9x 2010 | `.sfc`, `.smc` | None for ordinary cartridges; special coprocessor content may have core-specific needs |
 | PC Engine / TurboGrafx-16 | Beetle PCE Fast | `.pce` | None |
 | PC Engine CD | Beetle PCE Fast | `.cue` + tracks, `.chd`, `.m3u` | `syscard3.pce`, 262,144 bytes (also accepts a 512-byte copier header) |
-| Mega Drive / Genesis | Genesis Plus GX | `.md`, `.gen`, `.bin` | None |
+| Mega Drive / Genesis | Genesis Plus GX | `.md`, `.gen`, `.smd`, `.bin` | None |
 | Mega-CD / Sega CD | Genesis Plus GX | `.cue` + tracks, `.chd`, `.iso`, `.m3u` | Choose USA/Europe/Japan core entry: `bios_CD_U.bin` / `bios_CD_E.bin` / `bios_CD_J.bin`, 131,072 bytes each; only the selected region is required |
 | Sega 32X | PicoDrive | `.32x` | Core's replacement bootstrap; no external BIOS required for this profile |
 | Neo Geo AES / MVS | Geolith | `.neo` cartridges | AES: `aes.zip` containing `neo-epo.bin`, `000-lo.lo`. MVS: `neogeo.zip` containing `sp-u2.sp1`, `000-lo.lo`, `sfix.sfix`, `sm1.sm1`. Initial profiles use USA region |

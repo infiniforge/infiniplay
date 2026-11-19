@@ -6,6 +6,7 @@ import sys,struct,tempfile,subprocess,os
 ROOT=Path(__file__).resolve().parents[1]
 LIBS=ROOT/'build/native/jni/arm64-v8a'
 class Game(C.Structure):_fields_=[('path',C.c_char_p),('data',C.c_void_p),('size',C.c_size_t),('meta',C.c_char_p)]
+class Variable(C.Structure):_fields_=[('key',C.c_char_p),('value',C.c_char_p)]
 class Info(C.Structure):_fields_=[('name',C.c_char_p),('version',C.c_char_p),('extensions',C.c_char_p),('fullpath',C.c_bool),('block',C.c_bool)]
 LOG=C.CFUNCTYPE(None,C.c_int,C.c_char_p)
 ENV=C.CFUNCTYPE(C.c_bool,C.c_uint,C.c_void_p)
@@ -19,10 +20,15 @@ class Disk(C.Structure):_fields_=[('eject',EJECT),('ejected',EJECTED),('index',I
 def check(ok,message):
     if not ok:raise AssertionError(message)
 class Core:
- def __init__(self,name,directory):
+ def __init__(self,name,directory,variables=None):
     self.lib=C.CDLL(str(LIBS/('lib'+name+'.so')));self.disk=None;self.frames=0;self.samples=0;self.directory=os.fsencode(directory);self.logger=LOG(lambda level,message:None)
+    self.variables={k.encode():v.encode() for k,v in (variables or {}).items()}
     def environment(command,data):
         command&=0xffff
+        if command==15:
+            variable=C.cast(data,C.POINTER(Variable)).contents
+            variable.value=self.variables.get(variable.key)
+            return variable.value is not None
         if command in (9,31):C.cast(data,C.POINTER(C.c_char_p))[0]=self.directory;return True
         if command==27:C.cast(data,C.POINTER(C.c_void_p))[0]=C.cast(self.logger,C.c_void_p).value;return True
         if command==13:self.disk=C.cast(data,C.POINTER(Disk)).contents if data else None;return True
@@ -92,6 +98,13 @@ def main():
     stella=bytearray(4096);stella[:5]=bytes.fromhex('78d84c02f0');stella[-6:]=struct.pack('<HHH',0xf000,0xf000,0xf000)
     for name,extension,content in [('genesis','sms',sms),('genesis','sg',sms),('genesis','gg',sms),('genesis','md',md),('picodrive','md',md),('pce','pce',pce),('stella','a26',stella)]:
         path=directory/('probe.'+extension);path.write_bytes(content);core=Core(name,directory);check(core.load(path),name+' rejected generated '+extension);core.run();core.close();print(name+': generated '+extension+' frames/audio/state passed',flush=True)
+    # Match the application's Genesis profile with a .gen cartridge, even after SMS.
+    cartridge=directory/'probe.gen';cartridge.write_bytes(md)
+    core=Core('genesis',directory,{'genesis_plus_gx_system_hw':'mega drive / genesis'})
+    check(core.load(cartridge),'Genesis profile rejected .gen cartridge');core.run()
+    # Pinned Genesis Plus GX core/system.h defines SYSTEM_MD as 0x80.
+    check(C.c_ubyte.in_dll(core.lib,'system_hw').value==0x80,'Genesis profile selected 8-bit hardware')
+    core.close();print('Genesis: .gen cartridge in verified Mega Drive hardware mode, frames/audio/state passed',flush=True)
     # A generated BIOS stub and three blank CDs validate the real PCE tray API,
     # not game compatibility. The stub spins inside its own ROM and reads no disc content.
     syscard=bytearray(262144)

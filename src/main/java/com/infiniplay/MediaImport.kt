@@ -88,29 +88,7 @@ class MediaImport(private val context: Context) {
             return PlayStore.Game(
                 id,
                 item.name.substringBeforeLast('.'),
-                when (entry.substringAfterLast('.').lowercase()) {
-                    "fds" -> Console.FDS
-                    "nes" -> Console.NES
-                    "gb" -> Console.GB
-                    "gbc" -> Console.GBC
-                    "sg" -> Console.SG1000
-                    "sms" -> Console.MASTERSYSTEM
-                    "gg" -> Console.GAMEGEAR
-                    "32x" -> Console.SEGA32X
-                    "pce" -> Console.PCE
-                    "lnx",
-                    "lyx" -> Console.LYNX
-                    "a26" -> Console.ATARI2600
-                    "a52",
-                    "car" -> Console.ATARI5200
-                    "a78" -> Console.ATARI7800
-                    "vb",
-                    "vboy" -> Console.VIRTUALBOY
-                    "neo" -> Console.NEOGEO
-                    "sfc",
-                    "smc" -> Console.SNES
-                    else -> system
-                },
+                MediaSystem.fromFilename(entry, system),
                 "$id/$entry",
                 source.authoritativeUri.toString(),
             )

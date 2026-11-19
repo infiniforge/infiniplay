@@ -301,4 +301,30 @@ public class PlayCoreTest {
     assertTrue(inputs.update("stick:digital", Set.of()).isEmpty());
     assertEquals(Set.of(22), inputs.held());
   }
+  @Test
+  public void genesisExtensionsOverridePreviouslySelectedMasterSystem() {
+    for (String extension : List.of("gen", "GEN", "md", "smd")) {
+      assertEquals(Console.MEGADRIVE,
+          MediaSystem.fromFilename("game." + extension, Console.MASTERSYSTEM));
+      assertEquals(Console.MEGADRIVE,
+          MediaSystem.fromFilename("old-library-id/game." + extension, Console.MASTERSYSTEM));
+    }
+    assertEquals("mega drive / genesis",
+        CoreSettings.defaults(CoreCatalog.ALL.stream()
+            .filter(c -> c.system() == MediaSystem.fromFilename("game.gen", Console.MASTERSYSTEM))
+            .findFirst().orElseThrow().id()).get("genesis_plus_gx_system_hw"));
+  }
+
+  @Test
+  public void ambiguousMediaKeepsSelectedSystem() {
+    for (String extension : List.of("bin", "rom", "cue", "iso", "chd", "m3u")) {
+      assertEquals(Console.SEGACD, MediaSystem.fromFilename("game." + extension, Console.SEGACD));
+      assertEquals(Console.MASTERSYSTEM,
+          MediaSystem.fromFilename("game." + extension, Console.MASTERSYSTEM));
+    }
+    assertEquals(Console.NES, MediaSystem.fromFilename("folder.gen/game", Console.NES));
+    assertEquals(Console.GAMEGEAR, MediaSystem.fromFilename("game.gg", Console.MEGADRIVE));
+    assertEquals(Console.MASTERSYSTEM, MediaSystem.fromFilename("game.sms", Console.MEGADRIVE));
+    assertEquals(Console.SG1000, MediaSystem.fromFilename("game.sg", Console.MEGADRIVE));
+  }
 }

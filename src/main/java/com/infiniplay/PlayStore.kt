@@ -121,7 +121,10 @@ class PlayStore(private val context: Context) {
                         Game(
                             g.getString("id"),
                             g.getString("name"),
-                            Console.valueOf(g.getString("system")),
+                            MediaSystem.fromFilename(
+                                g.getString("file"),
+                                Console.valueOf(g.getString("system")),
+                            ),
                             g.getString("file"),
                             g.optString("source"),
                         )
