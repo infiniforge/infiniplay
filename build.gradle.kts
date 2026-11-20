@@ -150,7 +150,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation(project(":play-core"))
     implementation(project(":retro-host"))
-    implementation("io.github.gretchycat.libinfiniselect:select-android:0.2.4")
+    implementation("io.github.gretchycat.libinfiniselect:select-android:0.2.5")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     testImplementation("junit:junit:4.13.2")
 }

@@ -28,7 +28,7 @@ public enum Console {
   N64("Nintendo 64", 4.0 / 3, 0),
   PSX("PlayStation", 4.0 / 3, 0),
   PSP("PlayStation Portable", 480.0 / 272, 0),
-  DS("Nintendo DS", 256.0 / 192, 80),
+  DS("Nintendo DS", 256.0 / 192, 64),
   THREEDS("Nintendo 3DS", 400.0 / 240, 90);
   public final String title;
   public final double aspect;

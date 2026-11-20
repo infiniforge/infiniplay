@@ -100,13 +100,14 @@ public class PlayCoreTest {
       for (boolean portrait : List.of(true, false)) {
         double w = portrait ? 1080 : 1920, h = portrait ? 1920 : 1080;
         var screens = ScreenLayout.fit(s, w, h, portrait, s.defaultGap);
+        assertEquals(h * .01, ScreenLayout.availableArea(w, h, portrait).top(), .00001);
         assertEquals(ScreenLayout.availableArea(w, h, portrait).top(),
             screens.get(0).destination().top(), .00001);
       }
   }
   @Test
   public void dsHingeKeepsHardwareProportion() {
-    assertEquals(80, Console.DS.defaultGap, 0);
+    assertEquals(64, Console.DS.defaultGap, 0);
     for (boolean portrait : List.of(true, false)) {
       var c = ScreenLayout.fit(Console.DS, 1080, 1920, portrait, Console.DS.defaultGap);
       double scale = c.get(0).destination().width() / 256;

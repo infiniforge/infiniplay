@@ -42,7 +42,7 @@ public final class ScreenLayout {
   public static Rect availableArea(double width, double height, boolean portrait) {
     if (!Double.isFinite(width + height) || width <= 0 || height <= 0)
       throw new IllegalArgumentException("Invalid screen area");
-    return new Rect(width * .02, height * .02, width * .98, height * .98);
+    return new Rect(width * .02, height * .01, width * .98, height * .98);
   }
   private static Rect fitRect(Rect area, double aspect) {
     double w = Math.min(area.width(), area.height() * aspect), h = w / aspect,

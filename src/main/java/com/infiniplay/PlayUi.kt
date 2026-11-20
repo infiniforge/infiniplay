@@ -174,7 +174,7 @@ object PlayUi {
             AlertDialog.Builder(activity)
                 .setTitle("Hinge gap · native screen pixels")
                 .setMessage(
-                    "The gap scales with the screens in both orientations. DS defaults to 80 native pixels. Calibrate the 3DS gap for your hardware variant (0–300). Screen widths retain their original proportions."
+                    "The gap scales with the screens in both orientations. DS defaults to 64 native pixels. Calibrate the 3DS gap for your hardware variant (0–300). Screen widths retain their original proportions."
                 )
                 .setView(box)
                 .setNegativeButton("Cancel", null)

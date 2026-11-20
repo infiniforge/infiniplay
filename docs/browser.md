@@ -58,3 +58,10 @@ contract; it does not change Folder or introduce a second file browser. ZIPs
 remain intact when staged. The selected core must support their contents:
 Geolith still requires `.neo` Neo Geo cartridges, and this change does not add
 MAME/FinalBurn ZIP ROM-set emulation.
+
+
+InfiniSelect 0.2.5 restores an embedded session when Play refreshes the browser
+on returning to the foreground after a game. If the Folder Binder died while
+the emulator was in front, the gateway leaves its fallback available and
+reconnects on refresh. A failed refresh gets one reconnect attempt before Play
+shows an error.
