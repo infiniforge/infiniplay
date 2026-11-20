@@ -15,3 +15,8 @@ The breadcrumb trail and list/icon toggle are Folder's actual toolbar, shared wi
 Tests cover system dispatch and durable link deduplication. Touch UI, directory relay/paging and selected-file grants, incoming grants and firmware-assisted immediate launch need device validation.
 
 Future caller actions can look up extended metadata, box art or thumbnails through the same hook. No online metadata/artwork service is implemented in this change.
+
+InfiniPlay 0.2.4 pins InfiniSelect 0.2.1. Its embedded callback crosses the app
+boundary as Android's plain ResultReceiver, preventing Folder from trying to
+load a private InfiniPlay callback class during Bundle unmarshalling. Protocol
+version 1 and Folder-owned browsing remain unchanged.

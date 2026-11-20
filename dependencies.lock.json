@@ -4,7 +4,7 @@
   "repositories": {
     "libinfiniselect": {
       "url": "https://github.com/infiniforge/libinfiniselect.git",
-      "commit": "9cec7192d823c52f53cecd82e6583448996d8953"
+      "commit": "7eff1a1803868df2927c087423042b3fb9e64c80"
     },
     "libinfinistream": {
       "url": "https://github.com/infiniforge/libinfinistream.git",

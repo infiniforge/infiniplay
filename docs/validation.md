@@ -1,6 +1,6 @@
 # Validation
 
-Version 0.2.3 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
+Version 0.2.4 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
 
 The Termux native probe explicitly loads the staged `libc++_shared.so` by absolute path before opening any cores. It does not require `LD_LIBRARY_PATH` or `LD_PRELOAD`; APK libraries retain no Termux-specific RPATH. To verify the shell-independent path, run `env -u LD_LIBRARY_PATH -u LD_PRELOAD ./build.sh --max-workers=2 --console=plain`.
 
@@ -33,3 +33,16 @@ restoration after surface re-creation. It has been compiled, not executed:
 menus, rotation, process-death recovery and fallback still need device acceptance.
 The APK check verifies that Play requests no broad storage permissions. Install
 both updated APKs for complete Folder embedding; see [browser behavior](browser.md).
+
+The 0.2.4 callback transport fix builds against InfiniSelect 0.2.1. The selector
+AAR and its 19 JVM tests pass; the Android instrumentation APK also compiles.
+Two new Android parcel tests cover callback unmarshalling with a platform-only
+class loader, original handler dispatch and payload delivery, including progress
+callbacks. These Android tests have not been executed here because no device is
+attached. The reported ClassNotFoundException identifies the callback subclass
+in 0.2.3; cross-app browser acceptance on the updated APK still needs hardware.
+
+The full 0.2.4 Play build passed 42 portable application tests, 19 selector JVM
+tests and all thirteen native-core probes/generated-program checks. APK
+verification passed ARM64/16 KiB/native-dependency and notices checks; its
+signature verifies and its manifest declares no permissions.
