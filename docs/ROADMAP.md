@@ -4,9 +4,9 @@ Status: `[ ]` unimplemented · `[?]` implemented but untested · `[x]` tested.
 
 A system is **tested** here only after interactive device/game validation. Automated tests are listed separately in [validation](validation.md); native synthetic probes do not certify game compatibility. A controller profile/manual core-import path counts as implemented but untested and is identified below.
 
-Device playback confirmed by the user on 2026-11-19 for the seventeen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
+Device playback confirmed by the user on 2026-11-19 and 2026-11-20 for the nineteen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
 
-The first core bundle focuses on systems through the SNES era plus Sega add-ons, Neo Geo and Virtual Boy. Version 0.3.0 adds GBA, Neo Geo Pocket/Color and WonderSwan/Color; generated-program checks do not mark them device-tested. Version 0.4.0 bundles the existing N64/PlayStation/PSP/DS/3DS profiles; these remain `[?]` pending interactive game validation. This document preserves the full longer-term system list. See [bundled systems](systems.md) for formats and firmware.
+The first core bundle focuses on systems through the SNES era plus Sega add-ons, Neo Geo and Virtual Boy. Version 0.3.0 adds GBA, Neo Geo Pocket/Color and WonderSwan/Color; generated-program checks do not mark them device-tested. Version 0.4.0 bundles the existing N64/PlayStation/PSP/DS/3DS profiles. The user confirmed N64 and DS playback on 2026-11-20; PlayStation, PSP and 3DS still await interactive confirmation. This document preserves the full longer-term system list. See [bundled systems](systems.md) for formats and firmware.
 
 ## Atari
 
@@ -25,10 +25,10 @@ The first core bundle focuses on systems through the SNES era plus Sega add-ons,
 - [x] Game Boy
 - [x] Game Boy Color
 - [x] Virtual Boy
-- [?] Nintendo 64 — bundled Mupen64Plus-Next
+- [x] Nintendo 64 — bundled Mupen64Plus-Next
 - [x] Game Boy Advance — bundled mGBA; gpSP remains a manual core import
 - [ ] GameCube
-- [?] Nintendo DS / DSi — DS bundles DeSmuME; DSi support remains unimplemented
+- [x] Nintendo DS — bundled DeSmuME; DSi support remains unimplemented
 - [?] Nintendo 3DS — bundled Citra; decrypted content and OpenGL ES 3.2 required
 - [ ] Nintendo Wii
 - [ ] Nintendo Wii U

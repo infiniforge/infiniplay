@@ -55,12 +55,13 @@ Sources: [mGBA](https://github.com/libretro/mgba),
 [Beetle WonderSwan](https://github.com/libretro/beetle-wswan-libretro).
 
 
-The five newly bundled profiles remain implemented but untested on Android with
-retail games. N64 and PSP use GLES; Citra requires OpenGL ES 3.2 and the launcher
-rejects older GPUs clearly. DS/3DS retain separate hardware-spaced screens and
-bottom-screen touch input. Citra uses the exact zero-gap top/bottom core layout
-and native resolution; the app supplies the physical gap. Encrypted 3DS games,
-CIA installation and DSi are not supported by this profile. PSP core assets are
+The user confirmed N64 and DS playback on 2026-11-20. PlayStation, PSP and 3DS
+remain implemented but unconfirmed on Android with retail games. N64 and PSP
+use GLES; Citra requires OpenGL ES 3.2 and the launcher rejects older GPUs
+clearly. DS/3DS retain separate hardware-spaced screens and bottom-screen touch
+input. Citra uses the exact zero-gap top/bottom core layout and native
+resolution; the app supplies the physical gap. Encrypted 3DS games, CIA
+installation and DSi are not supported by this profile. PSP core assets are
 installed in private storage automatically before launch. PlayStation uses the
 existing missing-BIOS prompt and removable-media controls. Generic disc/ELF/PBP
 extensions remain ambiguous and ask for a system once. `.cso` selects PSP;
