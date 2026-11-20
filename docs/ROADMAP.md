@@ -4,7 +4,7 @@ Status: `[ ]` unimplemented · `[?]` implemented but untested · `[x]` tested.
 
 A system is **tested** here only after interactive device/game validation. Automated tests are listed separately in [validation](validation.md); native synthetic probes do not certify game compatibility. A controller profile/manual core-import path counts as implemented but untested and is identified below.
 
-Device playback confirmed by the user on 2026-11-19 for the thirteen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
+Device playback confirmed by the user on 2026-11-19 for the fifteen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
 
 The first core bundle focuses on systems through the SNES era plus Sega add-ons, Neo Geo and Virtual Boy. This document preserves the full longer-term system list. See [bundled systems](systems.md) for formats and firmware.
 
@@ -24,7 +24,7 @@ The first core bundle focuses on systems through the SNES era plus Sega add-ons,
 - [x] Super Famicom / SNES
 - [x] Game Boy
 - [x] Game Boy Color
-- [?] Virtual Boy
+- [x] Virtual Boy
 - [?] Nintendo 64 — profile and manual core import only
 - [?] Game Boy Advance — profile and manual core import only
 - [ ] GameCube
@@ -40,7 +40,7 @@ The first core bundle focuses on systems through the SNES era plus Sega add-ons,
 - [x] Game Gear
 - [x] Mega Drive / Genesis
 - [?] Mega-CD / Sega CD
-- [?] 32X
+- [x] 32X
 - [ ] Sega CD + 32X
 - [ ] Saturn
 - [ ] Dreamcast
