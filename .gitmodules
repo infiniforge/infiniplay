@@ -55,3 +55,18 @@
 [submodule "third_party/wswan"]
 	path = third_party/wswan
 	url = https://github.com/libretro/beetle-wswan-libretro.git
+[submodule "third_party/pcsx"]
+	path = third_party/pcsx
+	url = https://github.com/libretro/pcsx_rearmed.git
+[submodule "third_party/desmume"]
+	path = third_party/desmume
+	url = https://github.com/libretro/desmume.git
+[submodule "third_party/mupen64plus"]
+	path = third_party/mupen64plus
+	url = https://github.com/libretro/mupen64plus-libretro-nx.git
+[submodule "third_party/ppsspp"]
+	path = third_party/ppsspp
+	url = https://github.com/hrydgard/ppsspp.git
+[submodule "third_party/citra"]
+	path = third_party/citra
+	url = https://github.com/libretro/citra.git

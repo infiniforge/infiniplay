@@ -6,7 +6,7 @@ def write(path,text):
     if not path.is_file() or path.read_text()!=text:
         path.write_text(text)
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'build/native-source';OUT.mkdir(parents=True,exist_ok=True)
-CORES={'genesis':'Makefile.libretro','picodrive':'Makefile.libretro','pce':'Makefile','handy':'Makefile','stella':'Makefile','atari800':'Makefile','prosystem':'Makefile','snes9x':'Makefile.libretro','vb':'Makefile','geolith':'libretro/Makefile','ngp':'Makefile','wswan':'Makefile'}
+CORES={'genesis':'Makefile.libretro','picodrive':'Makefile.libretro','pce':'Makefile','handy':'Makefile','stella':'Makefile','atari800':'Makefile','prosystem':'Makefile','snes9x':'Makefile.libretro','vb':'Makefile','geolith':'libretro/Makefile','ngp':'Makefile','wswan':'Makefile','pcsx':'Makefile.libretro','desmume':'desmume/src/frontend/libretro/Makefile.libretro','mupen64plus':'Makefile'}
 cmake=[]
 for name,makefile in CORES.items():
  root=ROOT/'third_party'/name
@@ -15,11 +15,14 @@ for name,makefile in CORES.items():
  probe=OUT/(name+'.mk')
  probe.write_text('''.PHONY: play-manifest
 play-manifest:
-\t$(file >CAPTURE,sources=$(SOURCES_C) $(SOURCES_CXX) $(SOURCES) $(OBJS))
-\t$(file >>CAPTURE,flags=$(CFLAGS) $(CXXFLAGS) $(INCFLAGS) $(INCDIRS) $(LIBRETRO_CFLAGS))
+\t$(file >CAPTURE,sources=$(SOURCES_C) $(SOURCES_CXX) $(SOURCES) $(OBJS) $(SOURCES_ASM))
+\t$(file >>CAPTURE,flags=$(CFLAGS) $(CXXFLAGS) $(INCFLAGS) $(INCDIRS) $(LIBRETRO_CFLAGS) $(CPPFLAGS))
 \t@:
 '''.replace('CAPTURE',str(capture)))
  args=['make','--no-print-directory','-s','-f',makefile,'-f',str(probe),'play-manifest','platform=unix','ARCH=arm64','CC=clang','CXX=clang++','NO_ARM_ASM=1','use_sh2drc=0','use_svpdrc=0','PLATFORM_TREMOR=1','PLATFORM_ZLIB=1']
+ if name=='pcsx':args += ['DYNAREC=ari64','BUILTIN_GPU=neon','HAVE_PHYSICAL_CDROM=0','USE_ASYNC_CDROM=0','USE_ASYNC_GPU=0','USE_ASYNC_SPU=0','NDRC_THREAD=0']
+ if name=='desmume':args += ['DESMUME_OPENGL=0','DESMUME_OPENGL_CORE=0','DESMUME_JIT=0','DESMUME_JIT_ARM=0','HAVE_LIBFAT=1']
+ if name=='mupen64plus':args += ['FORCE_GLES3=1','WITH_DYNAREC=aarch64','HAVE_PARALLEL_RDP=0','HAVE_PARALLEL_RSP=0','HAVE_THR_AL=0']
  result=subprocess.run(args,cwd=root,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  if result.returncode:raise RuntimeError(name+': '+result.stderr)
  data=dict(line.split('=',1)for line in capture.read_text().splitlines())
@@ -40,6 +43,7 @@ play-manifest:
     if token.startswith('-I'):token='-I'+str((root/token[2:]).resolve())
     elif not(token.startswith('-D')or token in ('-fno-strict-aliasing','-fwrapv','-fno-common','-fsigned-char','-funsigned-char','-fno-strict-overflow')):continue
     if 'GIT_VERSION' in token:continue
+    if name=='desmume' and token=='-DHAVE_OPENGL':continue
     flags.append(token)
  cmake.append('add_library('+name+' SHARED\n'+''.join('  "'+str(p)+'"\n'for p in dict.fromkeys(sources))+')\n')
  cmake.append('target_compile_options('+name+' PRIVATE\n'+''.join('  [=['+f+']=]\n'for f in dict.fromkeys(flags))+')\n')

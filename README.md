@@ -1,11 +1,11 @@
 # InfiniPlay
 
-Standalone Android emulator frontend that runs Libretro cores inside the app. Version 0.3.1 targets ARM64 Android 8.0+ and OpenGL ES 3.0. RetroArch is not required.
+Standalone Android emulator frontend that runs Libretro cores inside the app. Version 0.4.0 targets ARM64 Android 8.0+ and OpenGL ES 3.0. RetroArch is not required.
 
-- Sixteen compiled-in cores cover [vintage systems and cartridge handhelds](docs/systems.md), including Atari 2600/5200/7800/Lynx, SG-1000/Master System/Game Gear, NES/FDS, GB/GBC, PC Engine/CD, Mega Drive/CD/32X, SNES, Neo Geo AES/MVS, Virtual Boy, GBA, Neo Geo Pocket/Color and WonderSwan/Color.
+- Twenty-one compiled-in cores cover [vintage systems and cartridge handhelds](docs/systems.md), including Atari 2600/5200/7800/Lynx, SG-1000/Master System/Game Gear, NES/FDS, GB/GBC, PC Engine/CD, Mega Drive/CD/32X, SNES, Neo Geo AES/MVS, Virtual Boy, GBA, Neo Geo Pocket/Color and WonderSwan/Color, plus N64, PlayStation, PSP, DS and 3DS.
 - USB/Bluetooth Android HID gamepads and joysticks, up to four player assignments, touch D-pads, sticks and buttons.
 - Portrait and landscape profiles with controller-specific colors and markings. Drag/pinch controls or edit size/position numerically; each console and orientation retains its own layout.
-- DS and 3DS screen geometry with a scaled hinge gap and bottom-screen touch mapping. Their cores must be imported separately; these are layout profiles, not bundled DS/3DS emulators.
+- DS and 3DS screen geometry with a scaled hinge gap and bottom-screen touch mapping. DS bundles DeSmuME; 3DS bundles Citra and requires OpenGL ES 3.2 and decrypted content.
 - Embedded InfiniSelect browsing, immediate file/View/Share launch, Recents and Favorites links. Missing required firmware interrupts launch and resumes the same game after selection.
 - FDS and multi-CD games share on-screen hardware-themed Eject/Open, Insert and previous/next media controls. No disk menu. Import M3U sets, including their CUE/BIN companions.
 - Per-game/core save memory and a manual save-state slot. Source media remains unchanged.
@@ -14,7 +14,7 @@ Tap Open to browse Virtual root, or Recents/Favorites for their system folders. 
 
 ## Build independently
 
-Install JDK 17+, Android SDK platform 36, Python 3, GNU Make, Clang and Git. Desktop builds also need NDK 27+ and CMake 3.22.1; specify your installed NDK with the Android Gradle toolchain configuration if necessary. The wrapper downloads Gradle/AGP/Kotlin and dependencies. No sibling application source or build artifacts are used.
+Install JDK 17+, Android SDK platform 36, Python 3, GNU Make, Clang and Git. Desktop builds also need NDK 27+ and CMake 3.22.1; specify your installed NDK with the Android Gradle toolchain configuration if necessary. The wrapper downloads Gradle/AGP/Kotlin and dependencies. Large PSP/3DS source builds need several GiB of free disk space; `PLAY_NATIVE_JOBS` controls compiler parallelism (default 2). No sibling application source or build artifacts are used.
 
 ```sh
 git clone --recurse-submodules https://github.com/infiniforge/infiniplay.git
@@ -23,7 +23,7 @@ export ANDROID_HOME=/path/to/android-sdk
 ./build.sh --max-workers=2 --console=plain
 ```
 
-Output: `InfiniPlay-debug.apk`. Termux builds use `clang`, `cmake`, `ninja`, `patchelf`, `aapt2`, Python 3 and the packaged C++ runtime; desktop builds use the NDK. Native libraries are aligned for 16 KiB pages. The first build needs network access. Submodule and lock-file commits must match.
+Output: `InfiniPlay-debug.apk`. Termux builds use `clang`, `cmake`, `ninja`, `patchelf`, `aapt2`, Python 3 and the packaged C++ runtime; desktop builds use the NDK. Native libraries are aligned for 16 KiB pages. The first build needs network access. Submodule and lock-file commits must match. The build initializes the pinned core dependencies, omitting unused large-project frontend/test dependencies. PSP/3DS use isolated upstream CMake builds; their outputs are packaged through the same app build.
 
 Regenerate the icon with `python3 scripts/build-app-icons.py` (requires `rsvg-convert`). It uses the suite's checked-in SVG outline/infinity-overlay method. `artwork/play.svg` has a transparent base background.
 

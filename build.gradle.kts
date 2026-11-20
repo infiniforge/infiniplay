@@ -12,8 +12,8 @@ android {
         applicationId = "com.infiniplay"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.3.1"
+        versionCode = 13
+        versionName = "0.4.0"
         ndk { abiFilters.add("arm64-v8a") }
         if (!termuxNative) externalNativeBuild { cmake { arguments += "-DANDROID_STL=c++_static" } }
     }
@@ -31,6 +31,8 @@ android {
                 version = "3.22.1"
             }
         }
+    sourceSets["main"].jniLibs.srcDir(layout.buildDirectory.dir("standalone-cores/jni"))
+    sourceSets["main"].assets.srcDir(layout.buildDirectory.dir("generated/core-assets"))
     packaging {
         jniLibs.useLegacyPackaging = true
         resources.merges += "META-INF/services/io.github.gretchycat.infinistream.CapabilityProvider"
@@ -68,6 +70,7 @@ val buildTermuxNative by
             file("src/main/cpp/CMakeLists.txt"),
             file("src/main/cpp/play_screens.h"),
             file("scripts/build-native.py"),
+            file("scripts/mupen-asm-defines.py"),
             file("src/main/cpp/fds_adapter.c"),
             file("src/main/cpp/fceumm_adapter.c"),
             file("src/main/cpp/pce_adapter.c"),
@@ -94,6 +97,9 @@ val buildTermuxNative by
                     "libmgba.so",
                     "libngp.so",
                     "libwswan.so",
+                    "libpcsx.so",
+                    "libdesmume.so",
+                    "libmupen64plus.so",
                 )
                 .map { layout.buildDirectory.file("native/jni/arm64-v8a/$it") }
         )
@@ -101,7 +107,41 @@ val buildTermuxNative by
 
 tasks.configureEach { if (name.startsWith("configureCMake")) dependsOn(prepareHost) }
 
+val buildStandaloneCores by
+    tasks.registering(Exec::class) {
+        inputs.files(
+            "scripts/build-standalone-cores.py",
+            "third-party.lock.json",
+            "src/main/cpp/standalone-overrides.cmake",
+            "src/main/cpp/termux-compat/syslog.h",
+        )
+        outputs.files(
+            layout.buildDirectory.file("standalone-cores/jni/arm64-v8a/libppsspp.so"),
+            layout.buildDirectory.file("standalone-cores/jni/arm64-v8a/libcitra.so"),
+        )
+        doFirst {
+            commandLine(
+                if (termuxNative) listOf("python3", "scripts/build-standalone-cores.py")
+                else
+                    listOf(
+                        "python3",
+                        "scripts/build-standalone-cores.py",
+                        "--ndk",
+                        androidComponents.sdkComponents.ndkDirectory.get().asFile.absolutePath,
+                    )
+            )
+        }
+    }
+val prepareCoreAssets by
+    tasks.registering(Exec::class) {
+        commandLine("python3", "scripts/prepare-core-assets.py")
+        inputs.files("scripts/prepare-core-assets.py", "third-party.lock.json")
+        inputs.dir("third_party/ppsspp/assets")
+        outputs.dir(layout.buildDirectory.dir("generated/core-assets"))
+    }
+
 tasks.named("preBuild").configure {
+    dependsOn(buildStandaloneCores, prepareCoreAssets)
     dependsOn(if (termuxNative) buildTermuxNative else prepareHost)
 }
 

@@ -6,7 +6,7 @@ Import and existing library reads share cartridge-extension detection. Unambiguo
 
 InfiniSelect hosts the complete Folder browser and delegates collection writes to Folder; InfiniPlay has no broad storage permissions. Shared links live at `Internal storage/infini/play/{recents,favorites}/<system>/`; see [browser](browser.md) for permissions and deduplication. Source identities remain in links; native working files and saves remain private.
 
-Games are staged under `files/games/<UUID>/`, with their source identity stored in `games.json`. A manifest imports every referenced sibling recursively (M3U → CUE → BIN/WAV); order and relative subdirectories are retained. Absolute/network paths, parent traversal, nested M3U files and malformed/empty manifests are rejected. Limits: 512 referenced files, three nesting levels, 1 MiB manifest, 2 GiB individual media and 8 GiB complete set. Import failure removes its staged game directory. `.part` files never become catalog entries. Files needing siblings must be selected from a provider/directory granting access to those files; use InfiniFolder when SAF only grants one file. Import never writes back to selected sources.
+Games are staged under `files/games/<UUID>/`, with their source identity stored in `games.json`. A manifest imports every referenced sibling recursively (M3U → CUE → BIN/WAV); order and relative subdirectories are retained. Absolute/network paths, parent traversal, nested M3U files and malformed/empty manifests are rejected. Limits: 512 referenced files, three nesting levels, 1 MiB manifest, 4 GiB individual media and 8 GiB complete set. Import failure removes its staged game directory. `.part` files never become catalog entries. Files needing siblings must be selected from a provider/directory granting access to those files; use InfiniFolder when SAF only grants one file. Import never writes back to selected sources.
 
 FDS content selects FCEUmm/FDS and requires `firmware/fceumm_fds/disksys.rom` (8,192 bytes). gpSP requires `gba_bios.bin` (16,384). Legacy melonDS requires `bios7.bin` (16,384), `bios9.bin` (4,096), `firmware.bin` (131,072/262,144/524,288). PCSX-ReARMed uses a required selected 512 KiB BIOS stored as `scph5501.bin` rather than relying on HLE fallback. The first bundle also declares the [Lynx/CD/Neo Geo firmware requirements](systems.md). Neo Geo BIOS archives must contain the required files for the chosen USA AES/MVS profile. Other profiles declare no mandatory firmware; additional core/game requirements remain core-specific. Byte-size checks catch empty/truncated files; they do not authenticate firmware. The user supplies these files; no console BIOS is included.
 
@@ -26,3 +26,17 @@ private snapshot is not the portable NeoPop `.ngf` format. WonderSwan SRAM and
 mGBA save memory use their normal Libretro interfaces. Saves stay per game/core,
 and no selected ROM is rewritten. Actual background/restart and retail-game
 save compatibility still require device confirmation.
+
+
+PPSSPP's shipped open-source core data (including replacement fonts) is copied
+from APK assets into `firmware/ppsspp/PPSSPP/` on the import worker. Individual
+files are atomically replaced and a pinned-revision marker is written last;
+interrupted installation retries on the next launch. Selected source files and
+user saves are not replaced by this data preparation. PPSSPP's Memory Stick
+files use the existing private per-game/core save directory. Citra is explicitly
+configured to use its `Citra/` subdirectory of that same save directory. Both
+cores write their own native save formats there; ordinary SRAM and manual states
+continue through the host where supported. 3DS content is limited to decrypted
+cartridges/executables and homebrew, without a CIA installation or key-management
+workflow. The individual-file bound is 4 GiB to accommodate larger 3DS cartridges;
+the existing 8 GiB complete-import bound remains in place.

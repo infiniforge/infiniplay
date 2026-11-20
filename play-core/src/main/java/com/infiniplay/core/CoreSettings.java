@@ -24,9 +24,12 @@ public final class CoreSettings {
       case "virtualboy" ->
         Map.of("vb_3dmode", "anaglyph", "vb_anaglyph_preset", "red & cyan", "vb_color_mode",
             "black & red", "vb_right_analog_to_digital", "On");
-      case "desmume" -> Map.of("desmume_screens_layout", "top/bottom", "desmume_screens_gap", "0");
+      case "mupen64plus_next" -> Map.of("mupen64plus-rdp-plugin", "gliden64", "mupen64plus-rsp-plugin", "hle", "mupen64plus-43screensize", "640x480");
+      case "pcsx_rearmed" -> Map.of("pcsx_rearmed_bios", "auto", "pcsx_rearmed_drc", "enabled");
+      case "ppsspp" -> Map.of("ppsspp_backend", "opengl", "ppsspp_internal_resolution", "480x272");
+      case "desmume" -> Map.of("desmume_screens_layout", "top/bottom", "desmume_screens_gap", "0", "desmume_pointer_type", "touch", "desmume_internal_resolution", "256x192");
       case "melonds" -> Map.of("melonds_screen_layout", "Top/Bottom", "melonds_screen_gap", "0");
-      case "citra" -> Map.of("citra_layout_option", "Default Top-Bottom");
+      case "citra" -> Map.of("citra_layout_option", "Default Top-Bottom Screen", "citra_resolution_factor", "1x (Native)", "citra_touch_touchscreen", "enabled", "citra_mouse_touchscreen", "disabled", "citra_use_libretro_save_path", "LibRetro Default");
       default -> Map.of();
     };
   }

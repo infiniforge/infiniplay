@@ -67,7 +67,7 @@ class MediaImport(private val context: Context) {
             if (!seen.add(relative)) return
             require(seen.size <= MediaManifest.MAX_FILES) { "Too many media files" }
             val target = File(directory, relative)
-            bytes += copy(src, target, 2L * 1024 * 1024 * 1024)
+            bytes += copy(src, target, 4L * 1024 * 1024 * 1024)
             require(bytes <= 8L * 1024 * 1024 * 1024) { "Media set exceeds 8 GiB" }
             if (target.extension.lowercase() in setOf("m3u", "cue")) {
                 require(target.length() <= 1024 * 1024) { "Manifest is too large" }

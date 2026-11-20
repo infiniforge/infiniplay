@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(infiniplay LANGUAGES C CXX)
+project(infiniplay LANGUAGES C CXX ASM)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 get_filename_component(PLAY_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
@@ -20,6 +20,34 @@ target_include_directories(fceumm PRIVATE "${FC}" "${FC}/input" "${FC}/boards" "
 target_compile_definitions(fceumm PRIVATE __LIBRETRO__ FCEU_VERSION_NUMERIC=9900 FRONTEND_SUPPORTS_RGB565 HAVE_STRL VFS_FRONTEND)
 target_link_libraries(fceumm PRIVATE m)
 include("${PLAY_ROOT}/build/native-source/extra-cores.cmake")
+target_include_directories(pcsx PRIVATE "${PLAY_ROOT}/third_party/pcsx")
+target_compile_definitions(pcsx PRIVATE Z7_ST ZSTD_DISABLE_ASM)
+set_source_files_properties("${PLAY_ROOT}/third_party/pcsx/plugins/gpu_neon/psx_gpu_if.c"
+    PROPERTIES COMPILE_DEFINITIONS "NEON_BUILD;TEXTURE_CACHE_4BPP;TEXTURE_CACHE_8BPP;SIMD_BUILD")
+set_source_files_properties("${PLAY_ROOT}/third_party/pcsx/plugins/gpu_neon/psx_gpu/psx_gpu_simd.c"
+    PROPERTIES COMPILE_DEFINITIONS SIMD_BUILD)
+target_compile_options(pcsx PRIVATE -Wno-error=implicit-function-declaration)
+target_link_libraries(pcsx PRIVATE dl log)
+target_compile_options(desmume PRIVATE -Wno-c++11-narrowing)
+target_link_libraries(mupen64plus PRIVATE GLESv2 EGL dl log)
+target_link_options(mupen64plus PRIVATE "-Wl,--version-script=${PLAY_ROOT}/third_party/mupen64plus/libretro/link.T")
+target_include_directories(pcsx BEFORE PRIVATE "${PLAY_ROOT}/build/native-source")
+# Upstream's assembler offsets must be generated with the target compiler and flags.
+get_target_property(MUPEN_OPTIONS mupen64plus COMPILE_OPTIONS)
+add_library(mupen_offsets OBJECT "${PLAY_ROOT}/third_party/mupen64plus/mupen64plus-core/src/asm_defines/asm_defines.c")
+target_compile_options(mupen_offsets PRIVATE ${MUPEN_OPTIONS})
+set(MUPEN_OFFSETS "${CMAKE_CURRENT_BINARY_DIR}/mupen-abi")
+file(MAKE_DIRECTORY "${MUPEN_OFFSETS}")
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_custom_command(OUTPUT "${MUPEN_OFFSETS}/asm_defines_gas.h"
+    COMMAND "${Python3_EXECUTABLE}" "${PLAY_ROOT}/scripts/mupen-asm-defines.py"
+        $<TARGET_OBJECTS:mupen_offsets> "${MUPEN_OFFSETS}/asm_defines_gas.h"
+    DEPENDS mupen_offsets $<TARGET_OBJECTS:mupen_offsets> "${PLAY_ROOT}/scripts/mupen-asm-defines.py")
+add_custom_target(mupen_abi DEPENDS "${MUPEN_OFFSETS}/asm_defines_gas.h")
+add_dependencies(mupen64plus mupen_abi)
+target_include_directories(mupen64plus BEFORE PRIVATE "${MUPEN_OFFSETS}")
+
+
 # Use mGBA's supported CMake target without desktop frontends or host-only dependencies.
 function(play_add_mgba)
     set(LIBMGBA_ONLY OFF)
@@ -53,14 +81,14 @@ list(FILTER HOST_SOURCES EXCLUDE REGEX "^(video|input)\\.cpp$")
 set_property(TARGET libretrodroid PROPERTY SOURCES ${HOST_SOURCES} "${PLAY_ROOT}/build/native-source/video.cpp" "${PLAY_ROOT}/build/native-source/input.cpp")
 target_compile_options(libretrodroid PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-include>" "$<$<COMPILE_LANGUAGE:CXX>:functional>")
 target_include_directories(libretrodroid PRIVATE "${HOST}" "${CMAKE_CURRENT_SOURCE_DIR}")
-foreach(core quicknes gambatte fceumm libretrodroid genesis picodrive pce handy stella atari800 prosystem snes9x vb geolith ngp wswan mgba_libretro)
+foreach(core quicknes gambatte fceumm libretrodroid genesis picodrive pce handy stella atari800 prosystem snes9x vb geolith ngp wswan mgba_libretro pcsx desmume mupen64plus)
     target_compile_options(${core} PRIVATE -O2)
     target_link_options(${core} PRIVATE "-Wl,-z,max-page-size=16384" "-Wl,--no-undefined")
 endforeach()
 if(PLAY_TERMUX)
     target_include_directories(libretrodroid PRIVATE "${PLAY_JNI_INCLUDE}")
     target_link_directories(libretrodroid PRIVATE /system/lib64)
-    foreach(core quicknes gambatte fceumm libretrodroid genesis picodrive pce handy stella atari800 prosystem snes9x vb geolith ngp wswan mgba_libretro)
+    foreach(core quicknes gambatte fceumm libretrodroid genesis picodrive pce handy stella atari800 prosystem snes9x vb geolith ngp wswan mgba_libretro pcsx desmume mupen64plus)
         target_link_directories(${core} PRIVATE /system/lib64 "${PLAY_JNI_INCLUDE}/../lib")
     endforeach()
 endif()

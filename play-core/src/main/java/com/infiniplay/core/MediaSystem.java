@@ -13,6 +13,7 @@ public final class MediaSystem {
     if (extension == Console.NGP && header.length >= 0x24 && (header[0x23] & 255) == 0x10)
       return Console.NGPC;
     if (extension != null) return extension;
+    if (header.length >= 8 && new String(header, 0, 8, java.nio.charset.StandardCharsets.US_ASCII).equals("PS-X EXE")) return Console.PSX;
     if (header.length >= 4 && header[0]=='N' && header[1]=='E' && header[2]=='S' && header[3]==0x1a) return Console.NES;
     if (header.length >= 4 && header[0]=='F' && header[1]=='D' && header[2]=='S' && header[3]==0x1a) return Console.FDS;
     if (header.length >= 260 && header[256]=='S' && header[257]=='E' && header[258]=='G' && header[259]=='A') return Console.MEGADRIVE;
@@ -29,8 +30,9 @@ public final class MediaSystem {
       case "ngc", "ngpc" -> Console.NGPC;
       case "ws" -> Console.WONDERSWAN;
       case "wsc" -> Console.WONDERSWANCOLOR;
+      case "cso" -> Console.PSP;
       case "nds" -> Console.DS;
-      case "3ds", "cci", "cxi" -> Console.THREEDS;
+      case "3ds", "cci", "cxi", "3dsx" -> Console.THREEDS;
       case "z64", "n64", "v64" -> Console.N64;
       case "fds" -> Console.FDS;
       case "nes" -> Console.NES;

@@ -32,12 +32,12 @@ public final class CoreCatalog {
           built("wswan", "Beetle WonderSwan", Console.WONDERSWAN, "wswan"),
           built("wswan_color", "Beetle WonderSwan · Color", Console.WONDERSWANCOLOR, "wswan"),
           new Core("gpsp", "gpSP", Console.GBA, false, ""),
-          new Core("mupen64plus_next", "Mupen64Plus-Next", Console.N64, false, ""),
-          new Core("pcsx_rearmed", "PCSX-ReARMed", Console.PSX, false, ""),
-          new Core("ppsspp", "PPSSPP", Console.PSP, false, ""),
-          new Core("desmume", "DeSmuME", Console.DS, false, ""),
+          built("mupen64plus_next", "Mupen64Plus-Next", Console.N64, "mupen64plus"),
+          built("pcsx_rearmed", "PCSX-ReARMed", Console.PSX, "pcsx"),
+          built("ppsspp", "PPSSPP", Console.PSP, "ppsspp"),
+          built("desmume", "DeSmuME", Console.DS, "desmume"),
           new Core("melonds", "melonDS (external firmware)", Console.DS, false, ""),
-          new Core("citra", "Citra-compatible", Console.THREEDS, false, ""));
+          built("citra", "Citra", Console.THREEDS, "citra"));
   private static Core built(String id, String title, Console system, String library) {
     return new Core(id, title, system, true, "lib" + library + ".so");
   }

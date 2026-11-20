@@ -1,6 +1,6 @@
 # Architecture
 
-The root Android application `com.infiniplay` targets ARM64, SDK 35, minimum SDK 26. `play-core` is portable Java 17 for geometry, control mapping, firmware policies, media manifests and multi-source button state. `retro-host` compiles the Java/Kotlin public API of pinned LibretroDroid 0.13.2; CMake builds its native host, Oboe and sixteen emulator libraries from source.
+The root Android application `com.infiniplay` targets ARM64, SDK 35, minimum SDK 26. `play-core` is portable Java 17 for geometry, control mapping, firmware policies, media manifests and multi-source button state. `retro-host` compiles the Java/Kotlin public API of pinned LibretroDroid 0.13.2; CMake builds its native host, Oboe and nineteen emulator libraries, plus isolated upstream CMake builds for PPSSPP and Citra from source.
 
 `PlayActivity` hosts Folder's complete browser surface through the thin InfiniSelect gateway, routes View/Share through the same immediate-open flow, requests shared .iflink collections through the permission-owning Folder relay, stages through InfiniSelect, stages content and gates launch on core/firmware availability. `SessionActivity` runs non-exported in `:emulator`, keeping a native crash separate from the library UI. Its LifecycleRegistry owns the GLRetroView lifecycle. Native media, polled-keyboard, serialization and geometry calls execute on its GL thread. Android lifecycle pauses release controls and capture save memory. The pause/settings dialog pauses emulation; changing removable media leaves frames running so games observe the eject interval.
 
@@ -39,3 +39,32 @@ WonderSwan's eight directional buttons map directly to the core's stable
 landscape keymap; display rotation is independent. LibretroDroid handles the
 core's rotation/geometry callbacks. Play gives it the available controller-safe
 viewport so a rotated game is fitted using its current aspect ratio.
+
+
+The existing five later-system profiles now have bundled defaults. PCSX, DeSmuME
+and Mupen64Plus-Next join the upstream Makefile source-manifest evaluation path.
+PCSX retains upstream NEON translation-unit defines and its ARM64 recompiler.
+Mupen's target compiler generates structure offsets into an object; the build
+extracts its upstream `@ASM_DEFINE` records for assembler headers, avoiding host
+ABI guesses. Its upstream export map keeps private ARM64 references local.
+
+PPSSPP and Citra are built with their own supported CMake projects in separate
+caches to avoid their target names/options colliding with each other or the
+native host. Both Termux and desktop NDK builds stage the two resulting libraries
+through the app's generated JNI source set. Optional desktop frontends, web
+services, tests and LTO are disabled for Citra. Its generated source view removes
+a developer-hook installer that assumes `.git` is a directory; pinned files are
+unchanged. A generated copy of its error formatter handles Bionic's GNU `strerror_r` signature correctly. Termux uses pinned AOSP NDK CPU-feature compatibility sources and a
+small include adapter so LibreSSL can supply its reentrant syslog implementation
+without conflicts with Termux's inline polyfills. Desktop builds use the NDK.
+Both large builds embed their exact pinned revision despite upstream scripts
+that assume `.git` is a directory. Citra consumes this revision in its save-state
+header; an `UNKNOWN` revision breaks state round trips. The source locks and
+offline notices cover all new cores and compatibility data.
+
+The build initializes only the PPSSPP/Citra dependency trees used by these core
+configurations; unrelated CI fixtures and standalone frontend dependencies are
+not required. PSP asset preparation runs on the import worker under the loading
+overlay, before the emulator handoff. DS/3DS options fix the native two-screen
+frame layout and enable pointer input so the existing screen splitter and
+bezel-rejecting touch map can be used directly.

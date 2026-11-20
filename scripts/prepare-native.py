@@ -53,3 +53,6 @@ needle='    switch (device) {'
 assert s.count(needle)==1
 s=s.replace(needle,needle+'\n        case RETRO_DEVICE_KEYBOARD: return id<512 ? playKeyboard[port][id] : 0;')
 write(out/'input.cpp',s)
+
+# PCSX consumes a generated version header; keep it out of the pinned checkout.
+write(out/'revision.h', '#define REV "InfiniPlay-pinned"\n')

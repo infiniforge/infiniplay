@@ -3,7 +3,7 @@
 - [Three-state system roadmap](ROADMAP.md)
 - [Overview and build](../README.md)
 - [Application responsibilities and status](APPLICATION.md)
-- [Bundled systems and firmware](systems.md)
+- [Bundled systems, core data and firmware](systems.md)
 - [Architecture, input and rendering](architecture.md)
 - [Browser, launch loading, recents, favorites and incoming files](browser.md)
 - [Storage, firmware and multi-disc imports](storage.md)

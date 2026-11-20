@@ -232,7 +232,11 @@ class SessionActivity : Activity(), LifecycleOwner {
                     AlertDialog.Builder(this@SessionActivity)
                         .setTitle("Core could not run")
                         .setMessage(
-                            "${core.title()} reported error $code. Check that this core, game and firmware are compatible. Your source files are unchanged."
+                            "${core.title()} reported error $code. " +
+                                (if (game.system == Console.THREEDS)
+                                    "Use a decrypted .3ds/.cci/.cxi image or .3dsx homebrew. "
+                                else "Check that this core, game and firmware are compatible. ") +
+                                "Your source files are unchanged."
                         )
                         .setPositiveButton("Return to library") { _, _ -> finish() }
                         .setOnCancelListener { finish() }

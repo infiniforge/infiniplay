@@ -1,0 +1,17 @@
+# Deferred until upstream has declared its targets. Keep pinned sources unchanged.
+set(PLAY_STANDALONE_ADAPTERS "${CMAKE_CURRENT_LIST_DIR}")
+function(play_standalone_finish)
+    if(ANDROID AND TARGET citra_libretro)
+        target_link_libraries(citra_libretro PRIVATE log)
+    endif()
+    if(TARGET citra_common)
+        get_target_property(PLAY_CITRA_COMMON_SOURCES citra_common SOURCES)
+        list(FILTER PLAY_CITRA_COMMON_SOURCES EXCLUDE REGEX "(^|/)error\\.cpp$")
+        set_property(TARGET citra_common PROPERTY SOURCES ${PLAY_CITRA_COMMON_SOURCES} "${PLAY_PATCHED_CITRA_ERROR}")
+    endif()
+    if(PLAY_TERMUX AND TARGET crypto_obj)
+        # Append after LibreSSL's compat include, before the toolchain sysroot.
+        target_include_directories(crypto_obj PRIVATE "${PLAY_STANDALONE_ADAPTERS}/termux-compat")
+    endif()
+endfunction()
+cmake_language(DEFER CALL play_standalone_finish)

@@ -21,12 +21,17 @@ class Disk(C.Structure):_fields_=[('eject',EJECT),('ejected',EJECTED),('index',I
 def check(ok,message):
     if not ok:raise AssertionError(message)
 class Core:
- def __init__(self,name,directory,variables=None):
-    self.lib=C.CDLL(str(LIBS/('lib'+name+'.so')));self.disk=None;self.frames=0;self.samples=0;self.directory=os.fsencode(directory);self.logger=LOG(lambda level,message:None)
+ def __init__(self,name,directory,variables=None,hardware=None):
+    path=LIBS/('lib'+name+'.so');path=path if path.is_file() else ROOT/'build/standalone-cores/jni/arm64-v8a'/path.name
+    self.lib=C.CDLL(str(path));self.disk=None;self.frames=0;self.samples=0;self.directory=os.fsencode(directory);self.logger=LOG(lambda level,message:None)
     self.variables={k.encode():v.encode() for k,v in (variables or {}).items()}
-    self.keys=set();self.rotation=0;self.geometry=None
+    self.shutdown=False;self.keys=set();self.rotation=0;self.geometry=None
     def environment(command,data):
         command&=0xffff
+        if command==7:self.shutdown=True;return True
+        if command==14 and hardware is not None:return hardware.install(data)
+        if command==56:C.cast(data,C.POINTER(C.c_uint))[0]=4;return True
+        if command==47:C.cast(data,C.POINTER(C.c_uint))[0]=3;return True
         if command==1:self.rotation=C.cast(data,C.POINTER(C.c_uint))[0];return True
         if command==37:self.geometry=C.cast(data,C.POINTER(Geometry)).contents;return True
         if command==15:
@@ -57,10 +62,14 @@ class Core:
  def load(self,path):
     self.content=C.create_string_buffer(path.read_bytes());self.game=Game(os.fsencode(path),C.cast(self.content,C.c_void_p),path.stat().st_size,None)
     return self.lib.retro_load_game(C.byref(self.game))
- def run(self):
-    for _ in range(120):self.lib.retro_run()
-    check(self.frames>=120,'core produced too few frames');check(self.samples>0,'core produced no audio')
-    size=self.lib.retro_serialize_size();check(0<size<16*1024*1024,'invalid save size');state=C.create_string_buffer(size)
+ def run(self,audio=True,state=True,max_runs=120,min_frames=120):
+    for step in range(max_runs):
+        self.lib.retro_run()
+        if step>=119 and self.frames>=min_frames:break
+    check(self.frames>=min_frames,'core produced too few frames: '+str(self.frames))
+    if audio:check(self.samples>0,'core produced no audio')
+    if not state:return
+    size=self.lib.retro_serialize_size();check(0<size<=128*1024*1024,'invalid save size');state=C.create_string_buffer(size)
     check(self.lib.retro_serialize(state,size),'serialize failed');check(self.lib.retro_unserialize(state,size),'unserialize failed')
  def close(self,loaded=True):
     if loaded:self.lib.retro_unload_game()

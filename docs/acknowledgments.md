@@ -9,3 +9,9 @@ Thank you to the Libretro project, the RetroArch team and the Libretro community
 We also thank endrift and the mGBA contributors, neopop_uk and the NeoPop/Mednafen maintainers, the Beetle WonderSwan contributors, and the original emulator authors, core maintainers, Oboe contributors and the other projects listed in [third-party notices](third-party.md). Each component retains its own copyright and license. InfiniPlay is an independent InfiniForge application.
 
 These acknowledgments and the bundled license notices are available offline from Settings → About / acknowledgments.
+
+
+Thanks also to the PCSX-ReARMed, DeSmuME, Mupen64Plus/GLideN64, PPSSPP and Citra
+teams and their dependency maintainers, and the Android Open Source Project for
+its NDK compatibility sources. Their licenses and exact sources are retained in
+the bundled offline notices and source lock.

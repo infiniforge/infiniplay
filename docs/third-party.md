@@ -32,3 +32,20 @@ See [acknowledgments](acknowledgments.md) for project credits. Application Setti
 The app-owned NeoPop adapter exposes cartridge flash through standard Libretro
 save memory; it includes unmodified pinned upstream source and retains its
 GPL-2.0-or-later terms. mGBA's Libretro build uses its upstream CMake target.
+
+
+Additional bundled cores in 0.4.0:
+
+| Component | Pinned upstream source | License documents |
+| --- | --- | --- |
+| PCSX-ReARMed | [libretro/pcsx_rearmed](https://github.com/libretro/pcsx_rearmed) | `third_party/pcsx/COPYING`, per-file notices, GPL-2.0-or-later |
+| DeSmuME | [libretro/desmume](https://github.com/libretro/desmume) | `third_party/desmume/desmume/COPYING`, per-file notices |
+| Mupen64Plus-Next, GLideN64 and HLE RSP | [libretro/mupen64plus-libretro-nx](https://github.com/libretro/mupen64plus-libretro-nx) | Core/plugin COPYING/LICENSE files and per-file notices |
+| PPSSPP and core assets | [hrydgard/ppsspp](https://github.com/hrydgard/ppsspp) | `third_party/ppsspp/LICENSE.TXT`, dependency and asset notices |
+| Citra and dependencies | [libretro/citra](https://github.com/libretro/citra) | `third_party/citra/license.txt`, dependency and per-file notices |
+| Android NDK CPU feature compatibility | [AOSP NDK r21](https://android.googlesource.com/platform/ndk/+/ndk-r21/sources/android/cpufeatures/) | `third_party/ndk-cpufeatures/NOTICE`, Apache-2.0; source URLs and SHA-256 values in the source lock |
+
+These cores are compiled from the pinned sources; no downloaded core binaries,
+commercial games or proprietary BIOS/key files are bundled. Upstream gitlinks
+remain unmodified; the Citra generated CMake source view and Termux include
+adapter are documented in [architecture](architecture.md).

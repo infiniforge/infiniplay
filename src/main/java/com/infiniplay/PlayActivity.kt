@@ -614,6 +614,10 @@ class PlayActivity : Activity() {
                                 "cue",
                                 "chd",
                                 "pbp",
+                                "cso",
+                                "elf",
+                                "exe",
+                                "3dsx",
                                 "iso",
                                 "zip",
                                 "bin",
@@ -772,6 +776,19 @@ class PlayActivity : Activity() {
                 .show()
             return
         }
+        if (
+            core.id() == "citra" &&
+                getSystemService(ActivityManager::class.java)
+                    .deviceConfigurationInfo
+                    .reqGlEsVersion < 0x00030002
+        ) {
+            cancelOpening()
+            message(
+                "OpenGL ES 3.2 required",
+                "This bundled 3DS core requires an OpenGL ES 3.2 device.",
+            )
+            return
+        }
         val missing = Firmware.missing(coreId, File(filesDir, "firmware/$coreId"))
         if (missing.isNotEmpty()) {
             val next = missing.first()
@@ -790,15 +807,17 @@ class PlayActivity : Activity() {
                 .show()
             return
         }
-        progress.handOff()
-        loadingLabel = "Starting ${game.name}…"
-        refreshLibrary()
-        startActivity(
-            Intent(this, SessionActivity::class.java)
-                .putExtra("game", game.id)
-                .putExtra("core", coreId)
-        )
-        pendingGame = null
+        work({ CoreAssets.prepare(this, coreId) }, label = "Preparing ${core.title()}…") {
+            progress.handOff()
+            loadingLabel = "Starting ${game.name}…"
+            refreshLibrary()
+            startActivity(
+                Intent(this, SessionActivity::class.java)
+                    .putExtra("game", game.id)
+                    .putExtra("core", coreId)
+            )
+            pendingGame = null
+        }
     }
 
     private fun <T> work(action: () -> T, label: String = "Loading…", done: (T) -> Unit) {

@@ -1,14 +1,14 @@
 # Validation
 
-Version 0.3.1 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
+Version 0.4.0 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
 
 The Termux native probe explicitly loads the staged `libc++_shared.so` by absolute path before opening any cores. It does not require `LD_LIBRARY_PATH` or `LD_PRELOAD`; APK libraries retain no Termux-specific RPATH. To verify the shell-independent path, run `env -u LD_LIBRARY_PATH -u LD_PRELOAD ./build.sh --max-workers=2 --console=plain`.
 
 Automated checks:
 
-- 55 portable JUnit tests: console layouts, unique controls, button positions/markings, theme differences, bounded edits, invalid geometry, DS hinge scaling, 3DS screen-width ratio, touch rejection/mapping, physical-gamepad dead zones, overlapping input release, disconnect cleanup, firmware launch policy, safe M3U/CUE parsing and Genesis cartridge routing, including correction of older library entries; handheld routing/controls and launch gating across duplicate selections, chained work, firmware prompts, cancellation, errors and emulator return.
+- 60 portable JUnit tests: console layouts, unique controls, button positions/markings, theme differences, bounded edits, invalid geometry, DS hinge scaling, 3DS screen-width ratio, touch rejection/mapping, physical-gamepad dead zones, overlapping input release, disconnect cleanup, firmware launch policy, safe M3U/CUE parsing and Genesis cartridge routing, including correction of older library entries; handheld routing/controls and launch gating across duplicate selections, chained work, firmware prompts, cancellation, errors and emulator return.
 - 26 InfiniSelect JVM tests, including bounded interoperable .iflink parsing, identity deduplication, independent favorites, caller action IDs/labels and rejection of invalid action arrays, directory JSON bounds, caller namespace/path confinement and initial list/icon preferences. The library also builds/tests independently.
-- ABI/initialization/extension checks for all sixteen packaged cores. Generated original programs exercise NES, GB, SG-1000/Master System/Game Gear, Mega Drive through both Sega cores, PC Engine and Atari 2600; the pinned SNES core's original renderer-test generator exercises SNES. Each checks 120 video/audio frames and a save-state round trip. A `.gen` probe also forces the app's Mega Drive hardware option and checks the pinned core's actual machine identifier after running the 8-bit Sega profiles.
+- ABI/initialization/extension checks for all twenty-one packaged cores. Generated original programs exercise NES, GB, SG-1000/Master System/Game Gear, Mega Drive through both Sega cores, PC Engine and Atari 2600; the pinned SNES core's original renderer-test generator exercises SNES. Each checks 120 video/audio frames and a save-state round trip. A `.gen` probe also forces the app's Mega Drive hardware option and checks the pinned core's actual machine identifier after running the 8-bit Sega profiles.
 - FDS rejection without `disksys.rom`; a generated original boot stub and six-side blank FDS image test actual core callbacks for eject, select every side, insert, invalid side and inserted-side-change rejection, video/audio and serialization. This does not test retail games or real firmware compatibility.
 - PCE CD: a generated boot stub plus three blank CUE/BIN discs loaded through M3U verify actual eject/select/insert callbacks, inserted-disc-change rejection, frames/audio and serialization. These are test stubs, not substitute console firmware or real-game compatibility checks.
 - Dependency pins, Android assembly, native SONAME/runtime dependencies, 16 KiB page alignment, packaged ABI, absence of broad storage permissions in the APK manifest and transparent icon assets.
@@ -17,7 +17,7 @@ The APK signature verifies and the packaged offline notices include explicit Lib
 
 The user confirmed device playback on 2026-11-19 for SG-1000, Master System, Game Gear, NES, Game Boy, Game Boy Color, SNES and PC Engine. The user also confirmed Genesis after its `.gen` routing correction. The user subsequently confirmed Atari 2600, Atari 5200, Atari 7800 and Atari Lynx after the Folder 0.1.13 container-verification fix. The user also confirmed Virtual Boy and Sega 32X. The user subsequently confirmed Game Boy Advance and Neo Geo Pocket. These reports establish playback for seventeen systems, not exhaustive game, save, input or lifecycle coverage. No Android device is connected to the development tools. The 0.2.3 Folder-owned embedded UI, relay paging and storage ownership, incoming View/Share grants, firmware-assisted immediate launch and both list/icon toggles need device acceptance. Still required on hardware: USB/Bluetooth hotplug and simultaneous fingers, portrait/landscape transitions during play, InfiniSelect cancellation/relaunch and provider sibling grants, audio lifecycle, SRAM persistence after background/restart, state slots, real FDS firmware/game playback and multi-CD changes with an imported compatible core. Automated parser and FDS adapter tests do not establish multi-CD game compatibility.
 
-The [first batch of vintage systems](systems.md) has bundled cores. N64/PlayStation/PSP/DS/3DS are profiles with manual core import; GBA now bundles mGBA. Core libraries must be Android ARM64 Libretro/GLES-compatible; arbitrary core binaries are not guaranteed to work. DS/3DS rendering assumes the documented zero-gap top/bottom source layout. The DS gap defaults to 90 native pixels; the 3DS gap remains provisional and adjustable rather than an exact measured hardware value. Controller art is hardware-inspired, not manufacturer artwork. Unusual controller mappings may need future per-device remapping.
+The [first batch of vintage systems](systems.md) has bundled cores. N64/PlayStation/PSP/DS/3DS now have bundled defaults; gpSP and melonDS remain optional manual imports. Core libraries must be Android ARM64 Libretro/GLES-compatible; arbitrary core binaries are not guaranteed to work. DS/3DS rendering assumes the documented zero-gap top/bottom source layout. The DS gap defaults to 90 native pixels; the 3DS gap remains provisional and adjustable rather than an exact measured hardware value. Controller art is hardware-inspired, not manufacturer artwork. Unusual controller mappings may need future per-device remapping.
 
 Libretro does not provide a universal game-wants-new-disk event, so the Eject/Open control is available whenever the core exposes removable media. Games show their own disk prompts. M3U/CUE references outside the selected directory, nested M3U and inaccessible siblings are rejected clearly. Compressed-ROM archives are not unpacked by the app; use a supported core/source provider or extract them first. Save export, arbitrary library deletion and a core downloader are not implemented in this initial build.
 
@@ -128,3 +128,42 @@ core checks. Signature, ARM64/16 KiB/native dependencies, notices and permission
 checks pass. Actual scrim visibility, touch blocking over Folder, dark/light
 colors, large-image startup, firmware prompts and lifecycle transitions still
 need device acceptance; no device is attached to the development tools.
+
+
+Version 0.4.0 bundles the existing N64, PlayStation, PSP, DS and 3DS profiles.
+Five new portable tests cover compiled defaults, ambiguous disc routing,
+PS-X executable/header detection, CSO/3DSX routing, retained PlayStation firmware
+gating, exact two-screen options/touch mapping and compatible renderer choices.
+All 60 application and 26 selector JVM tests pass. Generated original programs
+already verify PlayStation and DS video/audio, save-state round trips and source
+preservation. A generated N64 program exercises the ARM64 recompiler, writes
+RDRAM, advances through emulated frames, produces a GLES framebuffer and restores
+a save state. A static image can legitimately reuse a framebuffer, so this probe
+checks 120 emulation steps and the CPU-written memory rather than requiring a
+new image on every step. GPU probes use an actual offscreen EGL/GLES 3.2 context;
+they do not establish Activity/touch/controller/lifecycle compatibility.
+
+PSP replacement fonts and core data are shipped in the APK and prepared privately
+under the loading overlay. The source build uses pinned upstream CMake projects
+for PSP/3DS, plus generated compatibility adapters; upstream source checkouts
+remain unmodified by this work. Desktop NDK construction remains unexecuted here.
+The five profiles remain `[?]` until user game/device confirmation. Still needed:
+real selected PlayStation BIOS and CUE/BIN/CHD/M3U playback/disc changes, PSP
+movies/audio/Memory Stick persistence, DS/3DS touch coordinates and screen spacing,
+3DS decrypted-game playback and GLES compatibility, save persistence after app
+background/restart, gamepads and display-orientation changes.
+
+
+The completed 0.4.0 source build passes all 21 core integration checks. PSP's
+original ELF waits for asynchronous boot, verifies a CPU-written RAM marker,
+runs 120 GLES frames and restores a state. Citra's original 3DSX runs 120 GLES
+frames and restores a state. Both preserve the original executable bytes.
+Citra's upstream revision generator assumes `.git` is a directory: without a
+pinned source-archive revision, its own saved-state header uses `UNKNOWN` and
+cannot round-trip. The build now embeds the exact commit for Citra and PPSSPP;
+the generated-program state checks pass with those final binaries. PSP's CMake
+configuration also disables desktop X11 discovery, avoiding Termux-only dynamic
+dependencies in the Android library. The final standalone build, APK signature,
+ARM64 ABI, 16 KiB alignment, portable dependency, packaged PSP data/notices and
+permission checks pass. All five new roadmap entries remain implemented but
+untested for real games and Android UI/lifecycle acceptance.

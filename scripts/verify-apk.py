@@ -4,7 +4,7 @@ from pathlib import Path
 import sys,zipfile,tempfile,subprocess,struct,re
 ROOT=Path(__file__).resolve().parents[1]
 apk=Path(sys.argv[1]) if len(sys.argv)>1 else ROOT/'InfiniPlay-debug.apk'
-expected={'quicknes','gambatte','fceumm','genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith','mgba','ngp','wswan','libretrodroid'}
+expected={'quicknes','gambatte','fceumm','genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith','mgba','ngp','wswan','pcsx','desmume','mupen64plus','ppsspp','citra','libretrodroid'}
 names={'lib'+name+'.so'for name in expected}
 allowed={'libc.so','libm.so','libdl.so','libz.so','liblog.so','libandroid.so','libEGL.so','libGLESv2.so','libGLESv3.so','libOpenSLES.so','libc++_shared.so'}
 with zipfile.ZipFile(apk) as z,tempfile.TemporaryDirectory(prefix='apk-check-',dir=ROOT/'build') as temp:
@@ -21,6 +21,10 @@ with zipfile.ZipFile(apk) as z,tempfile.TemporaryDirectory(prefix='apk-check-',d
         deps=set(re.findall(r'\(NEEDED\).*\[([^]]+)\]',dynamic));assert deps<=allowed,(name,deps-allowed)
         assert 'libc++_shared.so'not in deps or 'lib/arm64-v8a/libc++_shared.so'in native,(name,'missing C++ runtime')
         assert '/data/data/'not in dynamic,(name,'local runtime path')
+    import json
+    assets=json.loads(z.read('assets/cores/ppsspp/manifest.json'))
+    assert assets['revision'] and 'PPSSPP/compat.ini' in assets['files'] and 'PPSSPP/flash0/font/ltn0.pgf' in assets['files']
+    assert all('assets/cores/ppsspp/'+path in z.namelist() for path in assets['files'])
     manifest=z.read('AndroidManifest.xml')
     for permission in ('MANAGE_EXTERNAL_STORAGE','READ_EXTERNAL_STORAGE','WRITE_EXTERNAL_STORAGE'):
         name='android.permission.'+permission
@@ -28,4 +32,6 @@ with zipfile.ZipFile(apk) as z,tempfile.TemporaryDirectory(prefix='apk-check-',d
     assert 'classes.dex'in z.namelist()and 'assets/notices.txt'in z.namelist()
     notices=z.read('assets/notices.txt').decode()
     assert 'Thank you to the Libretro project'in notices and 'Libretro API header license'in notices
-print('APK verified: 16 cores, host, ARM64, 16 KiB pages, portable native dependencies, Libretro acknowledgments and no broad storage permissions')
+    for label in ('PCSX-ReARMed','DeSmuME','PPSSPP','Citra','Boost Software License','Android Open Source Project'):
+        assert label in notices, ('Missing core attribution/license',label)
+print('APK verified: 21 cores, host, ARM64, 16 KiB pages, portable native dependencies, Libretro acknowledgments and no broad storage permissions')

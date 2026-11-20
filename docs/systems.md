@@ -1,6 +1,6 @@
 # Bundled systems
 
-The first batch targets systems through the SNES generation, including Sega's CD/32X add-ons, Virtual Boy and Neo Geo. Later-console profiles remain available for manually imported Android ARM64 Libretro cores. Version 0.3.0 also bundles GBA, Neo Geo Pocket/Color and WonderSwan/Color cartridge emulation.
+The first batch targets systems through the SNES generation, including Sega's CD/32X add-ons, Virtual Boy and Neo Geo. Version 0.4.0 also bundles the existing N64, PlayStation, PSP, DS and 3DS profiles. Version 0.3.0 also bundles GBA, Neo Geo Pocket/Color and WonderSwan/Color cartridge emulation.
 
 | System | Compiled core | Content | Required external firmware |
 | --- | --- | --- | --- |
@@ -27,6 +27,11 @@ The first batch targets systems through the SNES generation, including Sega's CD
 | Neo Geo Pocket Color | Beetle NeoPop | `.ngc`, `.ngpc`, color-header `.ngp` | None: built-in HLE BIOS |
 | WonderSwan | Beetle WonderSwan | `.ws` | None |
 | WonderSwan Color | Beetle WonderSwan | `.wsc` | None |
+| Nintendo 64 | Mupen64Plus-Next + GLideN64/HLE RSP | `.z64`, `.n64`, `.v64` | None for ordinary cartridges; 64DD is not exposed |
+| PlayStation | PCSX-ReARMed, ARM64 recompiler/NEON GPU | `.cue` + tracks, `.chd`, `.pbp`, `.m3u`, PS-X `.exe` | `scph5501.bin`, 524,288 bytes; selected via InfiniSelect |
+| PlayStation Portable | PPSSPP, GLES | `.iso`, `.cso`, `.pbp`, homebrew `.elf` | None; pinned replacement fonts and core data ship with Play |
+| Nintendo DS | DeSmuME, software renderer/ARM interpreter | `.nds` | None for the bundled HLE profile; melonDS remains a firmware-requiring manual alternative |
+| Nintendo 3DS | Citra, ARM64 Dynarmic/GLES | decrypted `.3ds`, `.cci`, `.cxi`, homebrew `.3dsx` | None for supported decrypted content; proprietary keys/system archives are not included |
 
 Neo Geo uses the TerraOnion `.neo` format; Geolith does not load MAME-style ZIP game sets. No game conversion or copyrighted game content is distributed. The core also contains Neo Geo CD functionality, but the app does not expose a Neo Geo CD profile in this batch.
 
@@ -36,7 +41,7 @@ Virtual Boy defaults to red/cyan anaglyph. Settings → Virtual Boy display also
 
 Source compatibility references: [Genesis Plus GX](https://docs.libretro.com/library/genesis_plus_gx/), [PicoDrive](https://docs.libretro.com/library/picodrive/), [Beetle PCE Fast](https://docs.libretro.com/library/beetle_pce_fast/), [Atari800](https://docs.libretro.com/library/atari800/), [Geolith](https://docs.libretro.com/library/geolith/), [Beetle VB](https://docs.libretro.com/library/beetle_vb/). See [validation](validation.md) for the distinction between a bundled core and tested games/devices.
 
-The new handheld profiles are implemented but await user device/game confirmation.
+GBA and Neo Geo Pocket playback are user-confirmed; Pocket Color and WonderSwan/Color still await device/game confirmation.
 GBA keeps its A/B, L/R and Start/Select controls. Pocket/Color use a joystick,
 A/B and OPTION. WonderSwan/Color show the eight physical X1–X4/Y1–Y4 buttons,
 A/B and START. The additional **ROTATE** control sends the core's display-toggle
@@ -48,3 +53,15 @@ Color titles using that shared suffix, and saved system hints survive import.
 Sources: [mGBA](https://github.com/libretro/mgba),
 [Beetle NeoPop](https://github.com/libretro/beetle-ngp-libretro),
 [Beetle WonderSwan](https://github.com/libretro/beetle-wswan-libretro).
+
+
+The five newly bundled profiles remain implemented but untested on Android with
+retail games. N64 and PSP use GLES; Citra requires OpenGL ES 3.2 and the launcher
+rejects older GPUs clearly. DS/3DS retain separate hardware-spaced screens and
+bottom-screen touch input. Citra uses the exact zero-gap top/bottom core layout
+and native resolution; the app supplies the physical gap. Encrypted 3DS games,
+CIA installation and DSi are not supported by this profile. PSP core assets are
+installed in private storage automatically before launch. PlayStation uses the
+existing missing-BIOS prompt and removable-media controls. Generic disc/ELF/PBP
+extensions remain ambiguous and ask for a system once. `.cso` selects PSP;
+`.3dsx` selects 3DS; a PS-X EXE signature selects PlayStation.

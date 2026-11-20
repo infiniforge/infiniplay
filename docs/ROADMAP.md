@@ -6,7 +6,7 @@ A system is **tested** here only after interactive device/game validation. Autom
 
 Device playback confirmed by the user on 2026-11-19 for the seventeen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
 
-The first core bundle focuses on systems through the SNES era plus Sega add-ons, Neo Geo and Virtual Boy. Version 0.3.0 adds GBA, Neo Geo Pocket/Color and WonderSwan/Color; generated-program checks do not mark them device-tested. This document preserves the full longer-term system list. See [bundled systems](systems.md) for formats and firmware.
+The first core bundle focuses on systems through the SNES era plus Sega add-ons, Neo Geo and Virtual Boy. Version 0.3.0 adds GBA, Neo Geo Pocket/Color and WonderSwan/Color; generated-program checks do not mark them device-tested. Version 0.4.0 bundles the existing N64/PlayStation/PSP/DS/3DS profiles; these remain `[?]` pending interactive game validation. This document preserves the full longer-term system list. See [bundled systems](systems.md) for formats and firmware.
 
 ## Atari
 
@@ -25,11 +25,11 @@ The first core bundle focuses on systems through the SNES era plus Sega add-ons,
 - [x] Game Boy
 - [x] Game Boy Color
 - [x] Virtual Boy
-- [?] Nintendo 64 — profile and manual core import only
+- [?] Nintendo 64 — bundled Mupen64Plus-Next
 - [x] Game Boy Advance — bundled mGBA; gpSP remains a manual core import
 - [ ] GameCube
-- [?] Nintendo DS / DSi — profile and manual core import only; DS layout exists, DSi support remains unimplemented
-- [?] Nintendo 3DS — profile and manual core import only
+- [?] Nintendo DS / DSi — DS bundles DeSmuME; DSi support remains unimplemented
+- [?] Nintendo 3DS — bundled Citra; decrypted content and OpenGL ES 3.2 required
 - [ ] Nintendo Wii
 - [ ] Nintendo Wii U
 
@@ -62,9 +62,9 @@ The first core bundle focuses on systems through the SNES era plus Sega add-ons,
 
 ## Sony
 
-- [?] PlayStation — profile and manual core import only
+- [?] PlayStation — bundled PCSX-ReARMed; user BIOS required
 - [ ] PlayStation 2
-- [?] PlayStation Portable — profile and manual core import only
+- [?] PlayStation Portable — bundled PPSSPP
 - [ ] PlayStation Vita
 
 ## Microsoft

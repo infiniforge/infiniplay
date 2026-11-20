@@ -8,6 +8,18 @@
       "commit": "4e7fbc73765c1a9670c7506616046ad1d4ccda51"
     },
     {
+      "name": "citra",
+      "path": "third_party/citra",
+      "url": "https://github.com/libretro/citra.git",
+      "commit": "a0483e9abe8134ae6b290cdca7d49cb77689f05b"
+    },
+    {
+      "name": "desmume",
+      "path": "third_party/desmume",
+      "url": "https://github.com/libretro/desmume.git",
+      "commit": "95b4d798731caa809125b6c3c11d17cc332ff6ef"
+    },
+    {
       "name": "fceumm",
       "path": "third_party/fceumm",
       "url": "https://github.com/libretro/libretro-fceumm.git",
@@ -50,6 +62,12 @@
       "commit": "7a12d6d4b9acb14c0ae62c9166b6a2f3d08007f6"
     },
     {
+      "name": "mupen64plus",
+      "path": "third_party/mupen64plus",
+      "url": "https://github.com/libretro/mupen64plus-libretro-nx.git",
+      "commit": "15bada85906593376e8fd697f1b0b3af3a20f512"
+    },
+    {
       "name": "ngp",
       "path": "third_party/ngp",
       "url": "https://github.com/libretro/beetle-ngp-libretro.git",
@@ -62,10 +80,22 @@
       "commit": "2de1ce1c3f237b161c126c54ba407990bb86d1e9"
     },
     {
+      "name": "pcsx",
+      "path": "third_party/pcsx",
+      "url": "https://github.com/libretro/pcsx_rearmed.git",
+      "commit": "7b0e8f8fadfbce3d170d195b9d9eecaabfa08c8e"
+    },
+    {
       "name": "picodrive",
       "path": "third_party/picodrive",
       "url": "https://github.com/libretro/picodrive.git",
       "commit": "1890c2932234c9d30f4cd3851d02228baae8f09e"
+    },
+    {
+      "name": "ppsspp",
+      "path": "third_party/ppsspp",
+      "url": "https://github.com/hrydgard/ppsspp.git",
+      "commit": "2b5715ece170ee4154dba3360807204a0c4b6bdd"
     },
     {
       "name": "prosystem",
@@ -102,6 +132,23 @@
       "path": "third_party/wswan",
       "url": "https://github.com/libretro/beetle-wswan-libretro.git",
       "commit": "4b01295838ea89e3f1355bbe4cb5cf98aa6108cd"
+    }
+  ],
+  "vendored_files": [
+    {
+      "path": "third_party/ndk-cpufeatures/cpu-features.c",
+      "url": "https://android.googlesource.com/platform/ndk/+/ndk-r21/sources/android/cpufeatures/cpu-features.c?format=TEXT",
+      "sha256": "9267b4f1f02acb82f8bbe3e00998f2ee9104a23172282331a360bd8d36c35231"
+    },
+    {
+      "path": "third_party/ndk-cpufeatures/cpu-features.h",
+      "url": "https://android.googlesource.com/platform/ndk/+/ndk-r21/sources/android/cpufeatures/cpu-features.h?format=TEXT",
+      "sha256": "9b8f3513090befe02d22b2d3780eab7e70748607116f29eff777f42a161652c4"
+    },
+    {
+      "path": "third_party/ndk-cpufeatures/NOTICE",
+      "url": "https://android.googlesource.com/platform/ndk/+/ndk-r21/sources/android/cpufeatures/NOTICE?format=TEXT",
+      "sha256": "c870d52f42a8f93023b99a85fe68d02637d6b04e5f35bbcd7f98759adb4e4d49"
     }
   ]
 }

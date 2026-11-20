@@ -10,15 +10,18 @@ header=ROOT/'third_party/libretrodroid/libretrodroid/src/main/cpp/libretro/libre
 parts.append('Libretro API header license\n'+header.read_text().split('*/',1)[0]+'*/')
 for filename in ('dependencies.lock.json','third-party.lock.json','LICENSE','licenses/llvm-libcxx.txt'):
     parts.append(filename+'\n'+(ROOT/filename).read_text())
-names={'license','license.txt','license.md','copying','copying.txt','copyright','copyright.txt','notice','notice.txt','unlicense'}
+names={'license','license.txt','license.md','copying','copying.txt','copyright','copyright.txt','notice','notice.txt','unlicense','licenses'}
 seen=set()
 for directory in ('third_party','libraries'):
     for file in sorted((ROOT/directory).rglob('*')):
-        if not file.is_file() or file.name.lower() not in names:continue
+        if not file.is_file():continue
+        legal_name=file.name.lower()
+        if legal_name not in names and not (re.match(r'^(license|copying|copyright|notice)[._-]',legal_name) and file.suffix.lower() not in {'.py','.kt','.java','.cfg','.xml','.sh','.cmake','.c','.cpp','.h'}):continue
         text=file.read_text(errors='replace').strip()
         if text in seen:continue
         seen.add(text);parts.append(str(file.relative_to(ROOT))+'\n'+text)
 assets=ROOT/'src/main/assets';assets.mkdir(exist_ok=True)
-# Preserve notice wording while normalizing trailing whitespace from upstream documents.
-(assets/'notices.txt').write_text('\n'.join(line.rstrip() for line in '\n\n'.join(parts).splitlines())+'\n')
+# Preserve notice wording; normalize trailing whitespace and extend seven-character RST
+# heading rulers so Git does not mistake legal-document formatting for a merge marker.
+(assets/'notices.txt').write_text('\n'.join('========' if line.rstrip()=='=======' else line.rstrip() for line in '\n\n'.join(parts).splitlines())+'\n')
 print('Updated offline third-party notices')

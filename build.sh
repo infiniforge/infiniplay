@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 cd -- "$(dirname -- "$0")"
-git submodule update --init --recursive
+python3 scripts/update-submodules.py
 python3 scripts/check-pins.py
 python3 scripts/build-notices.py
 PLAY_SDK=${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}
@@ -16,6 +16,9 @@ if [ -n "${TERMUX_VERSION:-}" ]; then
     set -- "-Pandroid.aapt2FromMavenOverride=$PLAY_AAPT2" -PtermuxNative=true "$@"
 fi
 ./gradlew :play-core:test :libinfiniselect:select-android:testDebugUnitTest assembleDebug testDebugUnitTest "$@"
-if [ -n "${TERMUX_VERSION:-}" ]; then python3 scripts/test-native-cores.py; fi
+if [ -n "${TERMUX_VERSION:-}" ]; then
+    python3 scripts/test-native-cores.py
+    python3 scripts/test-profile-cores.py
+fi
 cp build/outputs/apk/debug/*.apk InfiniPlay-debug.apk
 python3 scripts/verify-apk.py
