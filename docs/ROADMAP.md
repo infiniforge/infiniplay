@@ -4,16 +4,16 @@ Status: `[ ]` unimplemented · `[?]` implemented but untested · `[x]` tested.
 
 A system is **tested** here only after interactive device/game validation. Automated tests are listed separately in [validation](validation.md); native synthetic probes do not certify game compatibility. A controller profile/manual core-import path counts as implemented but untested and is identified below.
 
-Device playback confirmed by the user on 2026-11-19 for the nine checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
+Device playback confirmed by the user on 2026-11-19 for the thirteen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
 
 The first core bundle focuses on systems through the SNES era plus Sega add-ons, Neo Geo and Virtual Boy. This document preserves the full longer-term system list. See [bundled systems](systems.md) for formats and firmware.
 
 ## Atari
 
-- [?] Atari 2600
-- [?] Atari 5200
-- [?] Atari 7800
-- [?] Atari Lynx
+- [x] Atari 2600
+- [x] Atari 5200
+- [x] Atari 7800
+- [x] Atari Lynx
 - [ ] Atari Jaguar
 - [ ] Atari Jaguar CD
 
