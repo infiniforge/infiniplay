@@ -12,8 +12,8 @@ android {
         applicationId = "com.infiniplay"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "0.2.2"
         ndk { abiFilters.add("arm64-v8a") }
         if (!termuxNative) externalNativeBuild { cmake { arguments += "-DANDROID_STL=c++_static" } }
     }
@@ -105,7 +105,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
     implementation(project(":play-core"))
     implementation(project(":retro-host"))
-    implementation("io.github.gretchycat.libinfiniselect:select-android:0.1.2")
+    implementation("io.github.gretchycat.libinfiniselect:select-android:0.1.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     testImplementation("junit:junit:4.13.2")
 }
