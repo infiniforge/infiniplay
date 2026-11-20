@@ -1,6 +1,6 @@
 # Validation
 
-Version 0.2.2 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
+Version 0.2.3 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
 
 The Termux native probe explicitly loads the staged `libc++_shared.so` by absolute path before opening any cores. It does not require `LD_LIBRARY_PATH` or `LD_PRELOAD`; APK libraries retain no Termux-specific RPATH. To verify the shell-independent path, run `env -u LD_LIBRARY_PATH -u LD_PRELOAD ./build.sh --max-workers=2 --console=plain`.
 
@@ -15,19 +15,21 @@ Automated checks:
 
 The APK signature verifies and the packaged offline notices include explicit Libretro acknowledgments and the API header license. The build succeeds with a D8 warning about rewriting Kotlin metadata for PlayActivity; no reflection-based use of that metadata is part of the app. Interactive validation remains pending.
 
-The user confirmed device playback on 2026-11-19 for SG-1000, Master System, Game Gear, NES, Game Boy, Game Boy Color, SNES and PC Engine. The user also confirmed Genesis after its `.gen` routing correction. No Android device is connected to the development tools. The 0.2.2 shared Folder embedded UI, relay paging and storage ownership, incoming View/Share grants, firmware-assisted immediate launch and both list/icon toggles need device acceptance. Still required on hardware: USB/Bluetooth hotplug and simultaneous fingers, portrait/landscape transitions during play, InfiniSelect cancellation/relaunch and provider sibling grants, audio lifecycle, SRAM persistence after background/restart, state slots, real FDS firmware/game playback and multi-CD changes with an imported compatible core. Automated parser and FDS adapter tests do not establish multi-CD game compatibility.
+The user confirmed device playback on 2026-11-19 for SG-1000, Master System, Game Gear, NES, Game Boy, Game Boy Color, SNES and PC Engine. The user also confirmed Genesis after its `.gen` routing correction. No Android device is connected to the development tools. The 0.2.3 Folder-owned embedded UI, relay paging and storage ownership, incoming View/Share grants, firmware-assisted immediate launch and both list/icon toggles need device acceptance. Still required on hardware: USB/Bluetooth hotplug and simultaneous fingers, portrait/landscape transitions during play, InfiniSelect cancellation/relaunch and provider sibling grants, audio lifecycle, SRAM persistence after background/restart, state slots, real FDS firmware/game playback and multi-CD changes with an imported compatible core. Automated parser and FDS adapter tests do not establish multi-CD game compatibility.
 
 The [first batch of vintage systems](systems.md) has bundled cores. GBA/N64/PlayStation/PSP/DS/3DS are profiles with manual core import. Core libraries must be Android ARM64 Libretro/GLES-compatible; arbitrary core binaries are not guaranteed to work. DS/3DS rendering assumes the documented zero-gap top/bottom source layout. The DS gap defaults to 90 native pixels; the 3DS gap remains provisional and adjustable rather than an exact measured hardware value. Controller art is hardware-inspired, not manufacturer artwork. Unusual controller mappings may need future per-device remapping.
 
 Libretro does not provide a universal game-wants-new-disk event, so the Eject/Open control is available whenever the core exposes removable media. Games show their own disk prompts. M3U/CUE references outside the selected directory, nested M3U and inaccessible siblings are rejected clearly. Compressed-ROM archives are not unpacked by the app; use a supported core/source provider or extract them first. Save export, arbitrary library deletion and a core downloader are not implemented in this initial build.
 
 
-The shared-renderer change passed the standalone selector AAR build and 24 JVM
-checks (including the extracted filename-fitting regressions), the Play build and
-42 portable core checks, all 13 native core probes/generated programs, signature
-verification and APK checks. `aapt2 dump permissions InfiniPlay-debug.apk` lists
-only the package, with no requested permissions. Folder's normal/floating UI and
-existing tests also built successfully after the renderer extraction. Device
-acceptance remains pending for appearance/artwork Binder requests, touch actions,
-large-list scrolling and rotation. Install both updated APKs to exercise the new
-Folder artwork relay; see [browser behavior](browser.md).
+The 0.2.3 gateway change passed the standalone selector AAR/JVM build, compilation
+of its Android device-test APK, the Play build, 42 portable core checks and all
+13 native core probes/generated programs. The selector has 19 JVM tests;
+Folder's filename/view code is app-owned again, and its existing regression tests
+remain there. The new EmbeddedBrowserDeviceTest checks Folder-owned accessibility
+nodes, actual breadcrumb navigation, selected-file grants and Folder state
+restoration after surface re-creation. It has been compiled, not executed:
+`adb devices -l` reports no attached device. Cross-app input/rendering, Favorites
+menus, rotation, process-death recovery and fallback still need device acceptance.
+The APK check verifies that Play requests no broad storage permissions. Install
+both updated APKs for complete Folder embedding; see [browser behavior](browser.md).

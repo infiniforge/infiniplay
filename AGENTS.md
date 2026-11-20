@@ -17,3 +17,9 @@ Documentation index: `README.md`, `docs/README.md`, `docs/APPLICATION.md`, `docs
 The user-owned roadmap lives in `docs/ROADMAP.md`. Preserve its system list and three statuses: `[ ]` unimplemented, `[?]` implemented but untested, `[x]` tested. Record the test scope; do not turn synthetic-core checks into claims of device/game validation.
 
 The home screen uses libinfiniselect EmbeddedFileBrowser. All game entry points share immediate launch and shared .iflink collections; see `docs/browser.md`. Do not restore a persistent system chooser or separate import-and-tap flow.
+
+
+Embedded browsing must be Folder's complete remote View through InfiniSelect.
+Do not implement a file list, renderer, breadcrumbs or directory navigation in
+Play or move Folder presentation into a client library. Ordinary InfiniSelect/SAF
+selection is the fallback when remote embedding is unavailable.

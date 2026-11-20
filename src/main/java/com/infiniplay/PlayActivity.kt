@@ -75,16 +75,9 @@ class PlayActivity : Activity() {
         root.addView(statusText)
         browser =
             EmbeddedFileBrowser(this).apply {
+                selectLinkDocuments =
+                    true // Play owns the system hint stored in its .iflink documents.
                 onSelected = { if (!busy) openSelection(it) }
-                fileActions = {
-                    if (busy) emptyList()
-                    else
-                        listOf(
-                            if (page == "favorites")
-                                SelectionAction("remove_favorite", "Remove favorite")
-                            else SelectionAction("add_favorite", "Add to favorites")
-                        )
-                }
                 onFileAction = { action, item ->
                     if (!busy)
                         openSelection(item, favorite = action == "add_favorite", play = false)
@@ -92,9 +85,6 @@ class PlayActivity : Activity() {
                 onRequestOpen = {
                     picking = "game"
                     browse()
-                }
-                onRequestTree = { initial ->
-                    StorageAccess.selectDirectory(this@PlayActivity, 42, initial)
                 }
                 onError = { message("Storage", it) }
             }
@@ -141,6 +131,11 @@ class PlayActivity : Activity() {
 
     private fun showPage(next: String) {
         page = next
+        browser.fileActions =
+            listOf(
+                if (next == "favorites") SelectionAction("remove_favorite", "Remove favorite")
+                else SelectionAction("add_favorite", "Add to favorites")
+            )
         work({
             if (next == "open") null
             else {
