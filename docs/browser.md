@@ -27,3 +27,11 @@ surface state inside that navigation root, including load-error recovery. Open
 clears the lock and starts at Virtual root. The gateway places the embedded
 surface above the host window for real touch input, and Folder removes its
 floating-frame elevation/insets when embedded.
+
+Version 0.2.6 uses the general .iflink model from InfiniSelect 0.2.3. Links can
+point to directories, network resources and arbitrary absolute URIs. Folder
+resolves targets before routing them, wherever the shortcut is stored. A regular
+game target can still return its original .iflink to preserve system hints. A
+directory link delivered directly to Play opens the Folder-owned browser at
+that directory. Directory targets do not enter Play's game Favorites workflow.
+URI handlers and all browsing remain Folder responsibilities.

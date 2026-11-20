@@ -160,6 +160,7 @@ class PlayActivity : Activity() {
         val item: SelectionItem,
         val hint: com.infiniplay.core.Console?,
         val detected: com.infiniplay.core.Console?,
+        val directory: FileShortcut? = null,
     )
 
     private fun openSelection(
@@ -171,65 +172,76 @@ class PlayActivity : Activity() {
             changeFavorite(item, favorite)
             return
         }
-        work({
-            var selected = item
-            var hint: com.infiniplay.core.Console? = null
-            val seen = hashSetOf<String>()
-            repeat(8) {
-                if (
-                    selected.name.endsWith(".iflink", true) ||
-                        selected.mimeType == FileShortcut.MIME
-                ) {
-                    check(seen.add(selected.authoritativeUri.toString())) { "Cyclic game link" }
-                    val link = FileShortcut.read(this, selected.contentUri)
-                    hint =
-                        link.system?.let {
-                            runCatching { com.infiniplay.core.Console.valueOf(it) }.getOrNull()
+        work(
+            read@{
+                var selected = item
+                var hint: com.infiniplay.core.Console? = null
+                val seen = hashSetOf<String>()
+                repeat(8) {
+                    if (
+                        selected.name.endsWith(".iflink", true) ||
+                            selected.mimeType == FileShortcut.MIME
+                    ) {
+                        check(seen.add(selected.authoritativeUri.toString())) { "Cyclic game link" }
+                        val link = FileShortcut.read(this, selected.contentUri)
+                        if (link.targetIsDirectory) return@read Opened(selected, null, null, link)
+                        hint =
+                            link.system?.let {
+                                runCatching { com.infiniplay.core.Console.valueOf(it) }.getOrNull()
+                            }
+                        val source =
+                            InfiniSelect.requireSource(
+                                this,
+                                link.targetUri,
+                                link.displayName,
+                                link.mimeType,
+                            )
+                        selected =
+                            SelectionItem(
+                                source.contentUri,
+                                source.displayName ?: link.displayName,
+                                source.mimeType ?: link.mimeType,
+                                source.sizeBytes,
+                                sourceReference = source.authoritativeUri.toString(),
+                            )
+                    }
+                }
+                require(!selected.name.endsWith(".iflink", true)) { "Too many nested game links" }
+                val known =
+                    store.games().firstOrNull { it.source == selected.authoritativeUri.toString() }
+                val header =
+                    StorageAccess.openRead(this, selected.contentUri).use { input ->
+                        val bytes = ByteArray(512)
+                        var offset = 0
+                        while (offset < bytes.size) {
+                            val n = input.read(bytes, offset, bytes.size - offset)
+                            if (n < 0) break
+                            offset += n
                         }
-                    val source =
-                        InfiniSelect.requireSource(
-                            this,
-                            link.targetUri,
-                            link.displayName,
-                            link.mimeType,
-                        )
-                    selected =
-                        SelectionItem(
-                            source.contentUri,
-                            source.displayName ?: link.displayName,
-                            source.mimeType ?: link.mimeType,
-                            source.sizeBytes,
-                            sourceReference = source.authoritativeUri.toString(),
-                        )
-                }
+                        bytes.copyOf(offset)
+                    }
+                Opened(selected, hint ?: known?.system, MediaSystem.identify(selected.name, header))
             }
-            require(!selected.name.endsWith(".iflink", true)) { "Too many nested game links" }
-            val known =
-                store.games().firstOrNull { it.source == selected.authoritativeUri.toString() }
-            val header =
-                StorageAccess.openRead(this, selected.contentUri).use { input ->
-                    val bytes = ByteArray(512)
-                    var offset = 0
-                    while (offset < bytes.size) {
-                        val n = input.read(bytes, offset, bytes.size - offset)
-                        if (n < 0) break
-                        offset += n
-                    }
-                    bytes.copyOf(offset)
+        ) { opened ->
+            val directory = opened.directory
+            if (directory != null) {
+                page = "open"
+                browser.fileActions = listOf(SelectionAction("add_favorite", "Add to favorites"))
+                browser.sortByModified = false
+                browser.open(Uri.parse(directory.targetUri), directory.displayName)
+            } else {
+                val detected = opened.detected ?: opened.hint
+                if (detected != null) finishOpening(opened.item, detected, favorite, play)
+                else {
+                    val systems = com.infiniplay.core.Console.values()
+                    AlertDialog.Builder(this)
+                        .setTitle("System for ${opened.item.name}")
+                        .setItems(systems.map { it.title }.toTypedArray()) { _, i ->
+                            finishOpening(opened.item, systems[i], favorite, play)
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
                 }
-            Opened(selected, hint ?: known?.system, MediaSystem.identify(selected.name, header))
-        }) { opened ->
-            val detected = opened.detected ?: opened.hint
-            if (detected != null) finishOpening(opened.item, detected, favorite, play)
-            else {
-                val systems = com.infiniplay.core.Console.values()
-                AlertDialog.Builder(this)
-                    .setTitle("System for ${opened.item.name}")
-                    .setItems(systems.map { it.title }.toTypedArray()) { _, i ->
-                        finishOpening(opened.item, systems[i], favorite, play)
-                    }
-                    .setNegativeButton("Cancel", null)
-                    .show()
             }
         }
     }
@@ -240,6 +252,10 @@ class PlayActivity : Activity() {
                 FileShortcut.read(this, item.contentUri)
             else FileShortcut(item.authoritativeUri.toString(), item.name, item.mimeType)
         }) { link ->
+            if (link.targetIsDirectory) {
+                message("Favorites", "Choose a game file to add to Favorites")
+                return@work
+            }
             val selected =
                 link.system?.let { runCatching { Console.valueOf(it) }.getOrNull() }
                     ?: MediaSystem.identify(link.displayName, byteArrayOf())
