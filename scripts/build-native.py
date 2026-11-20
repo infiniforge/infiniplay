@@ -10,7 +10,7 @@ subprocess.run(['cmake','-S',str(ROOT/'src/main/cpp'),'-B',str(out/'cmake'),'-G'
  '-DCMAKE_POLICY_VERSION_MINIMUM=3.5','-DCMAKE_BUILD_TYPE=Release','-DPLAY_TERMUX=ON','-DPLAY_JNI_INCLUDE='+str(PREFIX/'include'),
  '-DCMAKE_SHARED_LINKER_FLAGS=-L/system/lib64','-DCMAKE_INSTALL_PREFIX='+str(PREFIX)],check=True)
 subprocess.run(['cmake','--build',str(out/'cmake'),'--parallel',os.environ.get('PLAY_NATIVE_JOBS','2')],check=True)
-for name in ['libquicknes.so','libgambatte.so','libfceumm.so','liblibretrodroid.so',*[f'lib{n}.so' for n in ('genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith')]]:
+for name in ['libquicknes.so','libgambatte.so','libfceumm.so','liblibretrodroid.so',*[f'lib{n}.so' for n in ('genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith','mgba','ngp','wswan')]]:
     files=list((out/'cmake').rglob(name));assert len(files)==1,(name,files)
     shutil.copy2(files[0],jni/name)
 

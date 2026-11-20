@@ -15,3 +15,14 @@ Every required missing/wrong-size file is prompted at launch, selected through I
 External cores are privately staged under `codeCacheDir/cores/`, checked as little-endian ELF64 ARM64 and marked read-only. Android may clear code cache after updates; launch then requests a fresh import. Imported native code runs with app privileges. Only select cores from a source you trust. Core IDs select a compatibility profile, not cryptographic verification.
 
 Save memory is `saves/<gameUUID>/<coreID>/save.srm`; manual state slot is `slot.state`. Atomic replacements prevent a partial write from replacing the last good file. SRAM is captured before activity pause and written on a worker. State capture/restore occurs on the emulation thread. No automatic state restore is attempted. FDS writes use the core's save-memory representation in this separate directory. There is no source-file replacement or disk commit action. Save/BIOS export and app backup are not implemented in this initial version.
+
+GBA, Pocket/Color and WonderSwan/Color imports use the same private staging and
+authoritative-source identity rules. Their bundled profiles require no external
+BIOS; mGBA uses its built-in HLE implementation. The imported gpSP profile still
+requires `gba_bios.bin`. Pocket flash is captured as a private whole-cartridge
+SRAM snapshot (`save.srm`) through the app adapter, so changes persist through
+the existing background save path as well as NeoPop's normal unload path. This
+private snapshot is not the portable NeoPop `.ngf` format. WonderSwan SRAM and
+mGBA save memory use their normal Libretro interfaces. Saves stay per game/core,
+and no selected ROM is rewritten. Actual background/restart and retail-game
+save compatibility still require device confirmation.

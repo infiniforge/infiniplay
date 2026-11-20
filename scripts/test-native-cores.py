@@ -7,6 +7,7 @@ ROOT=Path(__file__).resolve().parents[1]
 LIBS=ROOT/'build/native/jni/arm64-v8a'
 class Game(C.Structure):_fields_=[('path',C.c_char_p),('data',C.c_void_p),('size',C.c_size_t),('meta',C.c_char_p)]
 class Variable(C.Structure):_fields_=[('key',C.c_char_p),('value',C.c_char_p)]
+class Geometry(C.Structure):_fields_=[('width',C.c_uint),('height',C.c_uint),('max_width',C.c_uint),('max_height',C.c_uint),('aspect',C.c_float)]
 class Info(C.Structure):_fields_=[('name',C.c_char_p),('version',C.c_char_p),('extensions',C.c_char_p),('fullpath',C.c_bool),('block',C.c_bool)]
 LOG=C.CFUNCTYPE(None,C.c_int,C.c_char_p)
 ENV=C.CFUNCTYPE(C.c_bool,C.c_uint,C.c_void_p)
@@ -23,8 +24,11 @@ class Core:
  def __init__(self,name,directory,variables=None):
     self.lib=C.CDLL(str(LIBS/('lib'+name+'.so')));self.disk=None;self.frames=0;self.samples=0;self.directory=os.fsencode(directory);self.logger=LOG(lambda level,message:None)
     self.variables={k.encode():v.encode() for k,v in (variables or {}).items()}
+    self.keys=set();self.rotation=0;self.geometry=None
     def environment(command,data):
         command&=0xffff
+        if command==1:self.rotation=C.cast(data,C.POINTER(C.c_uint))[0];return True
+        if command==37:self.geometry=C.cast(data,C.POINTER(Geometry)).contents;return True
         if command==15:
             variable=C.cast(data,C.POINTER(Variable)).contents
             variable.value=self.variables.get(variable.key)
@@ -41,9 +45,11 @@ class Core:
     def video(data,w,h,pitch):
         check(0<w<=2048 and 0<h<=2048,'invalid core video dimensions');self.frames+=1
     def batch(data,frames):self.samples+=frames;return frames
-    self.callbacks=[ENV(environment),VIDEO(video),AUDIO(lambda l,r:None),BATCH(batch),POLL(lambda:None),INPUT(lambda p,d,i,k:0)]
+    self.callbacks=[ENV(environment),VIDEO(video),AUDIO(lambda l,r:None),BATCH(batch),POLL(lambda:None),INPUT(lambda p,d,i,k:int(p==0 and d==1 and k in self.keys))]
     for function,callback in zip(('retro_set_environment','retro_set_video_refresh','retro_set_audio_sample','retro_set_audio_sample_batch','retro_set_input_poll','retro_set_input_state'),self.callbacks):getattr(self.lib,function)(callback)
     self.lib.retro_load_game.argtypes=[C.POINTER(Game)];self.lib.retro_load_game.restype=C.c_bool
+    self.lib.retro_get_memory_size.argtypes=[C.c_uint];self.lib.retro_get_memory_size.restype=C.c_size_t
+    self.lib.retro_get_memory_data.argtypes=[C.c_uint];self.lib.retro_get_memory_data.restype=C.c_void_p
     self.lib.retro_serialize_size.restype=C.c_size_t
     self.lib.retro_serialize.argtypes=[C.c_void_p,C.c_size_t];self.lib.retro_serialize.restype=C.c_bool
     self.lib.retro_unserialize.argtypes=[C.c_void_p,C.c_size_t];self.lib.retro_unserialize.restype=C.c_bool
@@ -89,7 +95,7 @@ def main():
     check(disk.eject(True),'Eject failed');check(not disk.select(6),'Invalid side accepted');check(disk.index()==5,'Invalid select changed side');core.run();check(disk.index()==5 and disk.ejected(),'FDS save restore lost drive state');core.close()
     print('FDS: missing BIOS rejection, 6-side eject/select/insert, invalid-side rejection, frames and state passed',flush=True)
     # Core initialization/export checks include BIOS-dependent systems without using real firmware.
-    for name in ('genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith'):
+    for name in ('genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith','mgba','ngp','wswan'):
         core=Core(name,directory);check(core.info.name and core.info.extensions,name+' did not report its capabilities');core.close(False);print(name+': ABI, initialization and advertised media passed',flush=True)
     # Generated Z80, 68000, HuC6280 and 6502 cartridges exercise additional runtimes.
     sms=bytearray(32768);sms[:6]=bytes.fromhex('2130c03418fd');sms[0x7ff0:0x7ff8]=b'TMR SEGA';sms[0x7fff]=0x40
@@ -98,6 +104,65 @@ def main():
     stella=bytearray(4096);stella[:5]=bytes.fromhex('78d84c02f0');stella[-6:]=struct.pack('<HHH',0xf000,0xf000,0xf000)
     for name,extension,content in [('genesis','sms',sms),('genesis','sg',sms),('genesis','gg',sms),('genesis','md',md),('picodrive','md',md),('pce','pce',pce),('stella','a26',stella)]:
         path=directory/('probe.'+extension);path.write_bytes(content);core=Core(name,directory);check(core.load(path),name+' rejected generated '+extension);core.run();core.close();print(name+': generated '+extension+' frames/audio/state passed',flush=True)
+    # Original ARMv4T stub: branch to $080000c0, write SRAM, then spin.
+    # Only format-marker bytes and a generated header are used; no Nintendo logo/BIOS.
+    gba=bytearray(32768);gba[:4]=struct.pack('<I',0xea00002e);gba[0xc0:0xd4]=struct.pack('<IIIII',0xe59f0008,0xe3a0105a,0xe5c01000,0xeafffffe,0x0e000000)
+    gba[0xa0:0xac]=b'INFINI PROBE';gba[0xb2]=0x96;gba[0xbd]=(-sum(gba[0xa0:0xbd])-0x19)&255
+    path=directory/'probe.gba';path.write_bytes(gba)
+    core=Core('mgba',directory,{'mgba_use_bios':'OFF','mgba_skip_bios':'ON'})
+    check(core.load(path),'mGBA rejected original GBA program without a BIOS');core.run()
+    size=core.lib.retro_get_memory_size(0);pointer=core.lib.retro_get_memory_data(0)
+    check(size>=32768 and pointer,'GBA save memory missing')
+    check(C.c_ubyte.from_address(pointer).value==0x5a,'GBA program did not execute its SRAM write')
+    C.c_ubyte.from_address(pointer+1).value=0xa5;snapshot=C.string_at(pointer,size);core.close()
+    core=Core('mgba',directory,{'mgba_use_bios':'OFF','mgba_skip_bios':'ON'});check(core.load(path),'GBA reload failed')
+    C.memmove(core.lib.retro_get_memory_data(0),snapshot,len(snapshot));core.run()
+    check(C.c_ubyte.from_address(core.lib.retro_get_memory_data(0)+1).value==0xa5,'GBA save restore failed')
+    core.close();check(path.read_bytes()==gba,'GBA changed its source ROM')
+    print('mgba: original GBA program without BIOS, frames/audio/state and SRAM save restore passed',flush=True)
+    # TLCS-900H JP $200040, with our own Pocket/Pocket Color cartridge headers.
+    for extension,mode in [('ngp',0),('ngc',0x10)]:
+        cartridge=bytearray(32768);cartridge[0x1c:0x20]=struct.pack('<I',0x200040)
+        cartridge[0x23]=mode;cartridge[0x24:0x30]=b'INFINI PROBE';cartridge[0x40:0x44]=bytes.fromhex('1b400020')
+        path=directory/('probe.'+extension);path.write_bytes(cartridge)
+        core=Core('ngp',directory,{'ngp_language':'english'});check(core.load(path),'NeoPop rejected '+extension)
+        core.run()
+        size=core.lib.retro_get_memory_size(0);pointer=core.lib.retro_get_memory_data(0)
+        check(size==len(cartridge) and pointer,'NGP cartridge flash is not exposed as save memory')
+        C.c_ubyte.from_address(pointer+0x100).value=0x5a
+        snapshot=C.string_at(pointer,size);core.close()
+        check(core.lib.retro_get_memory_size(0)==0 and not core.lib.retro_get_memory_data(0),'NGP exposed freed flash memory')
+        check(path.read_bytes()==cartridge,'NGP changed its source ROM')
+        core=Core('ngp',directory,{'ngp_language':'english'});check(core.load(path),'NGP reload failed')
+        C.memmove(core.lib.retro_get_memory_data(0),snapshot,len(snapshot))
+        check(C.c_ubyte.from_address(core.lib.retro_get_memory_data(0)+0x100).value==0x5a,'NGP save restore failed')
+        core.run();core.close();print('ngp: original '+extension+' program, frames/audio/state and flash save restore passed',flush=True)
+    # V30MZ reset vector jumps to our CLI/JMP loop in a 64 KiB cartridge.
+    for extension,mode in [('ws',0),('wsc',1)]:
+        cartridge=bytearray(65536);cartridge[:3]=bytes.fromhex('faebfe');cartridge[-16:-11]=bytes.fromhex('ea000000f0')
+        cartridge[-9]=mode;cartridge[-5]=1;cartridge[-2:]=struct.pack('<H',sum(cartridge[:-2])&65535)
+        path=directory/('probe.'+extension);path.write_bytes(cartridge)
+        core=Core('wswan',directory,{'wswan_rotate_display':'manual','wswan_rotate_keymap':'disabled'})
+        check(core.load(path),'WonderSwan rejected '+extension);core.run()
+        # Exercise the actual emulated input port, not only the app's mapping table.
+        core.lib.WSwan_writeport.argtypes=[C.c_uint32,C.c_uint8]
+        core.lib.WSwan_readport.argtypes=[C.c_uint32];core.lib.WSwan_readport.restype=C.c_uint8
+        for group,buttons in [(0x20,[4,7,5,6]),(0x10,[13,11,12,10]),(0x40,[3,8,0])]:
+            for index,button in enumerate(buttons):
+                core.keys={button};core.lib.retro_run();core.lib.WSwan_writeport(0xb5,group)
+                expected=(1<<index) if group!=0x40 else (2<<index)
+                check(core.lib.WSwan_readport(0xb5)&15==expected,'WonderSwan button input mismatch')
+        core.keys={2};core.lib.retro_run();check(core.rotation==1,'WonderSwan did not rotate')
+        core.keys=set();core.lib.retro_run();core.keys={2};core.lib.retro_run();check(core.rotation==0,'WonderSwan did not rotate back')
+        size=core.lib.retro_get_memory_size(0);pointer=core.lib.retro_get_memory_data(0)
+        check(size==8192 and pointer,'WonderSwan save memory missing')
+        C.c_ubyte.from_address(pointer).value=0x5a;snapshot=C.string_at(pointer,size);core.close()
+        check(path.read_bytes()==cartridge,'WonderSwan changed its source ROM')
+        core=Core('wswan',directory,{'wswan_rotate_display':'manual','wswan_rotate_keymap':'disabled'})
+        check(core.load(path),'WonderSwan reload failed');C.memmove(core.lib.retro_get_memory_data(0),snapshot,len(snapshot))
+        check(C.c_ubyte.from_address(core.lib.retro_get_memory_data(0)).value==0x5a,'WonderSwan save restore failed')
+        core.run();core.close()
+        print('wswan: original '+extension+' program, frames/audio/state, X/Y/buttons, rotation and save restore passed',flush=True)
     # Match the application's Genesis profile with a .gen cartridge, even after SMS.
     cartridge=directory/'probe.gen';cartridge.write_bytes(md)
     core=Core('genesis',directory,{'genesis_plus_gx_system_hw':'mega drive / genesis'})

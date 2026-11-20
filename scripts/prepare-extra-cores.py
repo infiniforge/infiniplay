@@ -6,7 +6,7 @@ def write(path,text):
     if not path.is_file() or path.read_text()!=text:
         path.write_text(text)
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'build/native-source';OUT.mkdir(parents=True,exist_ok=True)
-CORES={'genesis':'Makefile.libretro','picodrive':'Makefile.libretro','pce':'Makefile','handy':'Makefile','stella':'Makefile','atari800':'Makefile','prosystem':'Makefile','snes9x':'Makefile.libretro','vb':'Makefile','geolith':'libretro/Makefile'}
+CORES={'genesis':'Makefile.libretro','picodrive':'Makefile.libretro','pce':'Makefile','handy':'Makefile','stella':'Makefile','atari800':'Makefile','prosystem':'Makefile','snes9x':'Makefile.libretro','vb':'Makefile','geolith':'libretro/Makefile','ngp':'Makefile','wswan':'Makefile'}
 cmake=[]
 for name,makefile in CORES.items():
  root=ROOT/'third_party'/name

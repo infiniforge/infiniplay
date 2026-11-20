@@ -278,7 +278,10 @@ class SessionActivity : Activity(), LifecycleOwner {
                 NativeScreens.set(values)
             }
         } else {
-            val d = screens.single().destination()
+            val d =
+                if (game.system in setOf(Console.WONDERSWAN, Console.WONDERSWANCOLOR))
+                    ScreenLayout.availableArea(w.toDouble(), h.toDouble(), portrait())
+                else screens.single().destination()
             retro.queueEvent {
                 NativeScreens.set(null)
                 retro.viewport =

@@ -46,3 +46,12 @@
 [submodule "third_party/geolith"]
 	path = third_party/geolith
 	url = https://github.com/libretro/geolith-libretro.git
+[submodule "third_party/mgba"]
+	path = third_party/mgba
+	url = https://github.com/libretro/mgba.git
+[submodule "third_party/ngp"]
+	path = third_party/ngp
+	url = https://github.com/libretro/beetle-ngp-libretro.git
+[submodule "third_party/wswan"]
+	path = third_party/wswan
+	url = https://github.com/libretro/beetle-wswan-libretro.git

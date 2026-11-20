@@ -33,6 +33,14 @@ public record ControllerTheme(
         new ControllerTheme(0xff22252a, 0xff51545b, 0xffeeeeee, 0xffe6bd4d, "⏏ OPEN", false);
       case VIRTUALBOY ->
         new ControllerTheme(0xffa33235, 0xff303034, 0xffefeeee, 0xffc23136, "⏏ EJECT", false);
+      case NGP ->
+        new ControllerTheme(0xffd0d0ce, 0xff343638, 0xff202124, 0xff69737a, "⏏ EJECT", false);
+      case NGPC ->
+        new ControllerTheme(0xff365c85, 0xff343638, 0xffeeeeee, 0xffdab94e, "⏏ EJECT", false);
+      case WONDERSWAN ->
+        new ControllerTheme(0xffd2d3cf, 0xff7e8588, 0xff202124, 0xff737e8a, "⏏ EJECT", false);
+      case WONDERSWANCOLOR ->
+        new ControllerTheme(0xff3b68a1, 0xff505d71, 0xffeeeeee, 0xff82b7d5, "⏏ EJECT", false);
       case N64 ->
         new ControllerTheme(0xff9da4b1, 0xff697381, 0xffffffff, 0xffd63b40, "⏏ EJECT", false);
       case GBA ->

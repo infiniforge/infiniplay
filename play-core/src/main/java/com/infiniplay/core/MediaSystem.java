@@ -9,6 +9,9 @@ public final class MediaSystem {
   /** Null means ambiguous content: request a system once rather than guessing a core. */
   public static Console identify(String filename, byte[] header) {
     Console extension = fromFilename(filename, null);
+    // Pocket Color cartridges are also commonly distributed with the .ngp suffix.
+    if (extension == Console.NGP && header.length >= 0x24 && (header[0x23] & 255) == 0x10)
+      return Console.NGPC;
     if (extension != null) return extension;
     if (header.length >= 4 && header[0]=='N' && header[1]=='E' && header[2]=='S' && header[3]==0x1a) return Console.NES;
     if (header.length >= 4 && header[0]=='F' && header[1]=='D' && header[2]=='S' && header[3]==0x1a) return Console.FDS;
@@ -21,7 +24,11 @@ public final class MediaSystem {
     name = name.substring(name.lastIndexOf('/') + 1);
     String extension = name.substring(name.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
     return switch (extension) {
-      case "gba" -> Console.GBA;
+      case "gba", "agb" -> Console.GBA;
+      case "ngp" -> selected == Console.NGPC ? Console.NGPC : Console.NGP;
+      case "ngc", "ngpc" -> Console.NGPC;
+      case "ws" -> Console.WONDERSWAN;
+      case "wsc" -> Console.WONDERSWANCOLOR;
       case "nds" -> Console.DS;
       case "3ds", "cci", "cxi" -> Console.THREEDS;
       case "z64", "n64", "v64" -> Console.N64;

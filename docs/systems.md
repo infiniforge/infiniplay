@@ -1,6 +1,6 @@
 # Bundled systems
 
-The first batch targets systems through the SNES generation, including Sega's CD/32X add-ons, Virtual Boy and Neo Geo. Later-console profiles remain available for manually imported Android ARM64 Libretro cores. Neo Geo Pocket is outside this batch.
+The first batch targets systems through the SNES generation, including Sega's CD/32X add-ons, Virtual Boy and Neo Geo. Later-console profiles remain available for manually imported Android ARM64 Libretro cores. Version 0.3.0 also bundles GBA, Neo Geo Pocket/Color and WonderSwan/Color cartridge emulation.
 
 | System | Compiled core | Content | Required external firmware |
 | --- | --- | --- | --- |
@@ -22,6 +22,11 @@ The first batch targets systems through the SNES generation, including Sega's CD
 | Sega 32X | PicoDrive | `.32x` | Core's replacement bootstrap; no external BIOS required for this profile |
 | Neo Geo AES / MVS | Geolith | `.neo` cartridges | AES: `aes.zip` containing `neo-epo.bin`, `000-lo.lo`. MVS: `neogeo.zip` containing `sp-u2.sp1`, `000-lo.lo`, `sfix.sfix`, `sm1.sm1`. Initial profiles use USA region |
 | Virtual Boy | Beetle VB | `.vb`, `.vboy` | None |
+| Game Boy Advance | mGBA | `.gba`, `.agb` | None: built-in HLE BIOS |
+| Neo Geo Pocket | Beetle NeoPop | `.ngp` | None: built-in HLE BIOS |
+| Neo Geo Pocket Color | Beetle NeoPop | `.ngc`, `.ngpc`, color-header `.ngp` | None: built-in HLE BIOS |
+| WonderSwan | Beetle WonderSwan | `.ws` | None |
+| WonderSwan Color | Beetle WonderSwan | `.wsc` | None |
 
 Neo Geo uses the TerraOnion `.neo` format; Geolith does not load MAME-style ZIP game sets. No game conversion or copyrighted game content is distributed. The core also contains Neo Geo CD functionality, but the app does not expose a Neo Geo CD profile in this batch.
 
@@ -30,3 +35,16 @@ Unambiguous filename extensions select their system automatically. Generic `.bin
 Virtual Boy defaults to red/cyan anaglyph. Settings → Virtual Boy display also offers original red/black without glasses and red/blue anaglyph; changes apply at next launch. The right hardware stick controls the second D-pad.
 
 Source compatibility references: [Genesis Plus GX](https://docs.libretro.com/library/genesis_plus_gx/), [PicoDrive](https://docs.libretro.com/library/picodrive/), [Beetle PCE Fast](https://docs.libretro.com/library/beetle_pce_fast/), [Atari800](https://docs.libretro.com/library/atari800/), [Geolith](https://docs.libretro.com/library/geolith/), [Beetle VB](https://docs.libretro.com/library/beetle_vb/). See [validation](validation.md) for the distinction between a bundled core and tested games/devices.
+
+The new handheld profiles are implemented but await user device/game confirmation.
+GBA keeps its A/B, L/R and Start/Select controls. Pocket/Color use a joystick,
+A/B and OPTION. WonderSwan/Color show the eight physical X1–X4/Y1–Y4 buttons,
+A/B and START. The additional **ROTATE** control sends the core's display-toggle
+button; physical X/Y labels retain their mappings across display rotation.
+USB gamepads use the D-pad/left stick for X1–X4 and R2/R/L2/L for Y1–Y4.
+The host fits both horizontal and vertical games inside the available screen
+area in either Android orientation. Cartridge `.ngp` headers distinguish Pocket
+Color titles using that shared suffix, and saved system hints survive import.
+Sources: [mGBA](https://github.com/libretro/mgba),
+[Beetle NeoPop](https://github.com/libretro/beetle-ngp-libretro),
+[Beetle WonderSwan](https://github.com/libretro/beetle-wswan-libretro).

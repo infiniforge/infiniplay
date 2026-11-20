@@ -15,6 +15,9 @@ InfiniPlay's application code and LibretroDroid-derived host are GPL-3.0-or-late
 | Handy, K. Wilkins and contributors | [libretro/libretro-handy](https://github.com/libretro/libretro-handy) | `third_party/handy/lynx/license.txt`, zlib-style notice |
 | Stella / Atari800 / ProSystem and contributors | Pinned `third_party/stella`, `third_party/atari800`, `third_party/prosystem` | Respective license documents and per-file notices; Altirra replacement OS is included by Atari800 |
 | Snes9x 2010 and contributors | [libretro/snes9x2010](https://github.com/libretro/snes9x2010) | `third_party/snes9x/LICENSE.txt`, Snes9x non-commercial terms |
+| mGBA, endrift and contributors | [libretro/mgba](https://github.com/libretro/mgba) | `third_party/mgba/LICENSE`, MPL-2.0; retain per-file notices |
+| Beetle NeoPop, neopop_uk, Mednafen and Libretro contributors | [libretro/beetle-ngp-libretro](https://github.com/libretro/beetle-ngp-libretro) | `third_party/ngp/COPYING`, GPL-2.0-or-later and per-file notices |
+| Beetle WonderSwan, Mednafen and Libretro contributors | [libretro/beetle-wswan-libretro](https://github.com/libretro/beetle-wswan-libretro) | `third_party/wswan/COPYING`, GPL-2.0-or-later and per-file notices |
 | Geolith, Rupert Carmichael and contributors | [libretro/geolith-libretro](https://github.com/libretro/geolith-libretro) | `third_party/geolith/LICENSE`, BSD-3-Clause |
 | Oboe, Google and contributors | LibretroDroid's pinned Oboe submodule | `third_party/libretrodroid/libretrodroid/src/main/cpp/oboe/LICENSE`, Apache-2.0 |
 | libretro-common contributors | Pinned source inside respective upstream checkouts | Per-file notices in each `libretro-common` tree |
@@ -25,3 +28,7 @@ InfiniPlay's application code and LibretroDroid-derived host are GPL-3.0-or-late
 [third-party.lock.json](../third-party.lock.json) records exact direct native source commits. Each upstream gitlink pins its nested source. App-owned FCEUmm and PCE CD adapters expose standard disk callbacks without modifying those upstream checkouts. `scripts/prepare-native.py` creates the documented final-pass compositor patch in the ignored build tree. The standard suite SVG icon compositor is checked in; the gamepad base artwork is original and transparent. Infinity artwork follows the existing InfiniForge asset method.
 
 See [acknowledgments](acknowledgments.md) for project credits. Application Settings → About / acknowledgments includes full bundled license notices and source locations. Runtime-imported cores are user-selected and are not included in this distribution.
+
+The app-owned NeoPop adapter exposes cartridge flash through standard Libretro
+save memory; it includes unmodified pinned upstream source and retains its
+GPL-2.0-or-later terms. mGBA's Libretro build uses its upstream CMake target.

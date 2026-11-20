@@ -44,6 +44,18 @@
       "commit": "0ebd299624bfd51a0a1336dd0a2c56fe7ddbc0e3"
     },
     {
+      "name": "mgba",
+      "path": "third_party/mgba",
+      "url": "https://github.com/libretro/mgba.git",
+      "commit": "7a12d6d4b9acb14c0ae62c9166b6a2f3d08007f6"
+    },
+    {
+      "name": "ngp",
+      "path": "third_party/ngp",
+      "url": "https://github.com/libretro/beetle-ngp-libretro.git",
+      "commit": "a50d5ac288a81f2104ddf43195a4efdd15c72227"
+    },
+    {
       "name": "pce",
       "path": "third_party/pce",
       "url": "https://github.com/libretro/beetle-pce-fast-libretro.git",
@@ -84,6 +96,12 @@
       "path": "third_party/vb",
       "url": "https://github.com/libretro/beetle-vb-libretro.git",
       "commit": "d5ae54c8e23b573a3b34e888b2d48a588027e92c"
+    },
+    {
+      "name": "wswan",
+      "path": "third_party/wswan",
+      "url": "https://github.com/libretro/beetle-wswan-libretro.git",
+      "commit": "4b01295838ea89e3f1355bbe4cb5cf98aa6108cd"
     }
   ]
 }

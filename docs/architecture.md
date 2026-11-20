@@ -1,6 +1,6 @@
 # Architecture
 
-The root Android application `com.infiniplay` targets ARM64, SDK 35, minimum SDK 26. `play-core` is portable Java 17 for geometry, control mapping, firmware policies, media manifests and multi-source button state. `retro-host` compiles the Java/Kotlin public API of pinned LibretroDroid 0.13.2; CMake builds its native host, Oboe and thirteen emulator libraries from source.
+The root Android application `com.infiniplay` targets ARM64, SDK 35, minimum SDK 26. `play-core` is portable Java 17 for geometry, control mapping, firmware policies, media manifests and multi-source button state. `retro-host` compiles the Java/Kotlin public API of pinned LibretroDroid 0.13.2; CMake builds its native host, Oboe and sixteen emulator libraries from source.
 
 `PlayActivity` hosts Folder's complete browser surface through the thin InfiniSelect gateway, routes View/Share through the same immediate-open flow, requests shared .iflink collections through the permission-owning Folder relay, stages through InfiniSelect, stages content and gates launch on core/firmware availability. `SessionActivity` runs non-exported in `:emulator`, keeping a native crash separate from the library UI. Its LifecycleRegistry owns the GLRetroView lifecycle. Native media, polled-keyboard, serialization and geometry calls execute on its GL thread. Android lifecycle pauses release controls and capture save memory. The pause/settings dialog pauses emulation; changing removable media leaves frames running so games observe the eject interval.
 
@@ -17,3 +17,23 @@ Source locks cover all direct checkouts, with upstream nested pins recorded by t
 The 5200 keypad uses a small generated `input.cpp` addition exposing polled Libretro keyboard state. Each keypad button maps to its real key code, rather than sharing the fire-button mapping. The 5200 controller subclass is selected explicitly. Extra-core source/define manifests are evaluated from pinned upstream Makefiles and compiled out of tree. PicoDrive uses portable interpreters with no dynamic recompiler; 32X performance needs device evaluation.
 
 The PCE CD adapter registers the loaded CD set with the same standard removable-media callbacks used by FDS and Sega CD. It keeps eject and insertion separate so the emulated drive observes a real tray interval. Source adapters and build manifests remain in app-owned files.
+
+mGBA is built from its pinned supported CMake Libretro target, with desktop
+frontends, optional dependencies and GPU renderers disabled. NeoPop and
+WonderSwan use the existing evaluated upstream Makefile source/define manifests.
+All three retain the portable ARM64/16 KiB packaging checks. No upstream source
+is edited. The new profiles reuse the same Folder/InfiniSelect import, collection,
+gamepad, orientation, control-customization and session paths.
+
+The app-owned `ngp_adapter.c` includes the pinned NeoPop translation unit and
+adds the standard save-memory view over its writable cartridge flash. NeoPop's
+normal unload-only `.ngf` path cannot supply a background SRAM snapshot by
+itself. The adapter exposes the loaded cartridge buffer and length only while
+loaded, allowing the existing GL-thread host save/restore path to persist it
+in the game's private core-specific save directory. Source ROM bytes are never
+replaced. WonderSwan's own save-memory API supplies cartridge SRAM.
+
+WonderSwan's eight directional buttons map directly to the core's stable
+landscape keymap; display rotation is independent. LibretroDroid handles the
+core's rotation/geometry callbacks. Play gives it the available controller-safe
+viewport so a rotated game is fitted using its current aspect ratio.

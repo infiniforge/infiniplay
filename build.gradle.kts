@@ -12,8 +12,8 @@ android {
         applicationId = "com.infiniplay"
         minSdk = 26
         targetSdk = 35
-        versionCode = 10
-        versionName = "0.2.8"
+        versionCode = 11
+        versionName = "0.3.0"
         ndk { abiFilters.add("arm64-v8a") }
         if (!termuxNative) externalNativeBuild { cmake { arguments += "-DANDROID_STL=c++_static" } }
     }
@@ -71,6 +71,7 @@ val buildTermuxNative by
             file("src/main/cpp/fds_adapter.c"),
             file("src/main/cpp/fceumm_adapter.c"),
             file("src/main/cpp/pce_adapter.c"),
+            file("src/main/cpp/ngp_adapter.c"),
             file("src/main/cpp/play_keyboard.h"),
         )
         outputs.files(
@@ -90,6 +91,9 @@ val buildTermuxNative by
                     "libsnes9x.so",
                     "libvb.so",
                     "libgeolith.so",
+                    "libmgba.so",
+                    "libngp.so",
+                    "libwswan.so",
                 )
                 .map { layout.buildDirectory.file("native/jni/arm64-v8a/$it") }
         )

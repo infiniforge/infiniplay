@@ -1,8 +1,8 @@
 # InfiniPlay
 
-Standalone Android emulator frontend that runs Libretro cores inside the app. Version 0.2.7 targets ARM64 Android 8.0+ and OpenGL ES 3.0. RetroArch is not required.
+Standalone Android emulator frontend that runs Libretro cores inside the app. Version 0.3.0 targets ARM64 Android 8.0+ and OpenGL ES 3.0. RetroArch is not required.
 
-- Thirteen compiled-in cores cover [systems through the SNES era](docs/systems.md), including Atari 2600/5200/7800/Lynx, SG-1000/Master System/Game Gear, NES/FDS, GB/GBC, PC Engine/CD, Mega Drive/CD/32X, SNES, Neo Geo AES/MVS and Virtual Boy.
+- Sixteen compiled-in cores cover [vintage systems and cartridge handhelds](docs/systems.md), including Atari 2600/5200/7800/Lynx, SG-1000/Master System/Game Gear, NES/FDS, GB/GBC, PC Engine/CD, Mega Drive/CD/32X, SNES, Neo Geo AES/MVS, Virtual Boy, GBA, Neo Geo Pocket/Color and WonderSwan/Color.
 - USB/Bluetooth Android HID gamepads and joysticks, up to four player assignments, touch D-pads, sticks and buttons.
 - Portrait and landscape profiles with controller-specific colors and markings. Drag/pinch controls or edit size/position numerically; each console and orientation retains its own layout.
 - DS and 3DS screen geometry with a scaled hinge gap and bottom-screen touch mapping. Their cores must be imported separately; these are layout profiles, not bundled DS/3DS emulators.
@@ -10,7 +10,7 @@ Standalone Android emulator frontend that runs Libretro cores inside the app. Ve
 - FDS and multi-CD games share on-screen hardware-themed Eject/Open, Insert and previous/next media controls. No disk menu. Import M3U sets, including their CUE/BIN companions.
 - Per-game/core save memory and a manual save-state slot. Source media remains unchanged.
 
-Tap Open to browse Virtual root, or Recents/Favorites for their system folders. File selection launches immediately. Ambiguous formats ask for their system once. Long-press a file to add/remove favorites. InfiniFolder writes links under `Internal storage/infini/play/{recents,favorites}/<system>/` through InfiniSelect; InfiniPlay requests no shared-storage permissions. Without Folder, links remain app-private. Setup is in the hamburger menu; the breadcrumb bar has a list/icon toggle. `.fds` automatically selects the FDS profile. FDS requires your own 8,192-byte `disksys.rom`; InfiniSelect opens when it is missing. For CD sets select the `.m3u` file. References must be relative and inside its directory. InfiniFolder can provide sibling access when a generic SAF provider only grants the selected manifest.
+Tap Open to browse Virtual root, or Recents/Favorites for their system folders. File selection launches immediately. Ambiguous formats ask for their system once. Long-press a file for Open in emulator or add/remove favorites. InfiniFolder writes links under `Internal storage/infini/play/{recents,favorites}/<system>/` through InfiniSelect; InfiniPlay requests no shared-storage permissions. Without Folder, links remain app-private. Setup is in the hamburger menu; the breadcrumb bar has a list/icon toggle. `.fds` automatically selects the FDS profile. FDS requires your own 8,192-byte `disksys.rom`; InfiniSelect opens when it is missing. For CD sets select the `.m3u` file. References must be relative and inside its directory. InfiniFolder can provide sibling access when a generic SAF provider only grants the selected manifest.
 
 ## Build independently
 

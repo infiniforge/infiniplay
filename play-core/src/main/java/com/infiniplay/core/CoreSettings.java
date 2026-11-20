@@ -17,6 +17,10 @@ public final class CoreSettings {
       case "atari5200" -> Map.of("atari800_system", "5200", "atari800_keyboard", "poll");
       case "geolith_aes" -> Map.of("geolith_system_type", "aes");
       case "geolith_mvs" -> Map.of("geolith_system_type", "mvs");
+      case "mgba" -> Map.of("mgba_use_bios", "OFF", "mgba_skip_bios", "ON");
+      case "ngp", "ngpc" -> Map.of("ngp_language", "english");
+      case "wswan", "wswan_color" -> Map.of("wswan_language", "english",
+          "wswan_rotate_display", "manual", "wswan_rotate_keymap", "disabled");
       case "virtualboy" ->
         Map.of("vb_3dmode", "anaglyph", "vb_anaglyph_preset", "red & cyan", "vb_color_mode",
             "black & red", "vb_right_analog_to_digital", "On");

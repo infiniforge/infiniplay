@@ -17,7 +17,8 @@ final class VintageLayouts {
   static List<PadLayout.Control> create(Console s, boolean p) {
     Set<Console> systems = EnumSet.of(Console.SG1000, Console.MASTERSYSTEM, Console.GAMEGEAR,
         Console.PCE, Console.PCECD, Console.SEGACD, Console.SEGA32X, Console.ATARI2600,
-        Console.ATARI5200, Console.ATARI7800, Console.LYNX, Console.NEOGEO, Console.VIRTUALBOY);
+        Console.ATARI5200, Console.ATARI7800, Console.LYNX, Console.NEOGEO, Console.VIRTUALBOY,
+        Console.NGP, Console.NGPC, Console.WONDERSWAN, Console.WONDERSWANCOLOR);
     if (!systems.contains(s))
       return null;
     List<PadLayout.Control> out = new ArrayList<>();
@@ -91,6 +92,31 @@ final class VintageLayouts {
         out.add(b("D", 99, 0xff4982d0, .94, y - .02));
         out.add(pill("SELECT", 109, .43, p ? .95 : .92));
         out.add(pill("START", 108, .57, p ? .95 : .92));
+      }
+      case NGP, NGPC -> {
+        out.set(0, c("dpad", "Joystick", DPAD, 0, 0xff303235, .17, y, .25));
+        out.add(b("B", 97, 0xff3e4247, .76, y + .025));
+        out.add(b("A", 96, 0xff3e4247, .90, y - .025));
+        out.add(pill("OPTION", 108, .58, p ? .94 : .90));
+      }
+      case WONDERSWAN, WONDERSWANCOLOR -> {
+        out.clear();
+        int color = s == Console.WONDERSWAN ? 0xff7e8588 : 0xff505d71;
+        String[] groups = {"X", "Y"};
+        int[][] keys = {{19, 22, 20, 21}, {105, 103, 104, 102}};
+        double[][] offsets = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        for (int group = 0; group < 2; group++) {
+          double cy = group == 0 ? (p ? .86 : .73) : (p ? .65 : .31);
+          for (int i = 0; i < 4; i++) {
+            String label = groups[group] + (i + 1);
+            out.add(c(label, label, BUTTON, keys[group][i], color,
+                .15 + offsets[i][0] * .075, cy + offsets[i][1] * (p ? .046 : .12), .075));
+          }
+        }
+        out.add(b("B", 97, color, .77, y + .035));
+        out.add(b("A", 96, color, .91, y - .035));
+        out.add(pill("START", 108, .57, p ? .94 : .90));
+        out.add(pill("ROTATE", 109, .39, p ? .94 : .90));
       }
       case VIRTUALBOY -> {
         out.set(0, c("dpad", "Left D-pad", DPAD, 0, 0xff303034, .15, p ? .83 : .70, .23));

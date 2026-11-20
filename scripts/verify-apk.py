@@ -4,7 +4,7 @@ from pathlib import Path
 import sys,zipfile,tempfile,subprocess,struct,re
 ROOT=Path(__file__).resolve().parents[1]
 apk=Path(sys.argv[1]) if len(sys.argv)>1 else ROOT/'InfiniPlay-debug.apk'
-expected={'quicknes','gambatte','fceumm','genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith','libretrodroid'}
+expected={'quicknes','gambatte','fceumm','genesis','picodrive','pce','handy','stella','atari800','prosystem','snes9x','vb','geolith','mgba','ngp','wswan','libretrodroid'}
 names={'lib'+name+'.so'for name in expected}
 allowed={'libc.so','libm.so','libdl.so','libz.so','liblog.so','libandroid.so','libEGL.so','libGLESv2.so','libGLESv3.so','libOpenSLES.so','libc++_shared.so'}
 with zipfile.ZipFile(apk) as z,tempfile.TemporaryDirectory(prefix='apk-check-',dir=ROOT/'build') as temp:
@@ -28,4 +28,4 @@ with zipfile.ZipFile(apk) as z,tempfile.TemporaryDirectory(prefix='apk-check-',d
     assert 'classes.dex'in z.namelist()and 'assets/notices.txt'in z.namelist()
     notices=z.read('assets/notices.txt').decode()
     assert 'Thank you to the Libretro project'in notices and 'Libretro API header license'in notices
-print('APK verified: 13 cores, host, ARM64, 16 KiB pages, portable native dependencies, Libretro acknowledgments and no broad storage permissions')
+print('APK verified: 16 cores, host, ARM64, 16 KiB pages, portable native dependencies, Libretro acknowledgments and no broad storage permissions')
