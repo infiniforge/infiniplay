@@ -47,8 +47,9 @@ A/B and OPTION. WonderSwan/Color show the eight physical X1–X4/Y1–Y4 buttons
 A/B and START. The additional **ROTATE** control sends the core's display-toggle
 button; physical X/Y labels retain their mappings across display rotation.
 USB gamepads use the D-pad/left stick for X1–X4 and R2/R/L2/L for Y1–Y4.
-The host fits both horizontal and vertical games inside the available screen
-area in either Android orientation. Cartridge `.ngp` headers distinguish Pocket
+The host fits horizontal and vertical games at the largest aspect-correct size
+inside the near-full-view area in either orientation. Customizable touch controls
+overlay the display. Cartridge `.ngp` headers distinguish Pocket
 Color titles using that shared suffix, and saved system hints survive import.
 Sources: [mGBA](https://github.com/libretro/mgba),
 [Beetle NeoPop](https://github.com/libretro/beetle-ngp-libretro),

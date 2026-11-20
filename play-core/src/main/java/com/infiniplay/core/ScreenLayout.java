@@ -22,7 +22,7 @@ public final class ScreenLayout {
       Console system, double width, double height, boolean portrait, double gap) {
     if (width <= 0 || height <= 0 || !Double.isFinite(width + height + gap) || gap < 0 || gap > 300)
       throw new IllegalArgumentException("Invalid screen layout");
-    // Keep room below in portrait and beside the displays in landscape.
+    // Fit each game display as large as the view allows; controls remain overlaid.
     Rect area = availableArea(width, height, portrait);
     if (!system.dual())
       return List.of(new Screen(new Rect(0, 0, 1, 1), fitRect(area, system.aspect)));
@@ -38,12 +38,11 @@ public final class ScreenLayout {
     return List.of(new Screen(new Rect(0, 0, 1, .5), upper),
         new Screen(new Rect(sourceLeft, .5, 1 - sourceLeft, 1), lower));
   }
-  /** The host fits a core's dynamic aspect/rotation inside this controller-safe area. */
+  /** The host fits a core's dynamic aspect/rotation inside the near-full-view area. */
   public static Rect availableArea(double width, double height, boolean portrait) {
     if (!Double.isFinite(width + height) || width <= 0 || height <= 0)
       throw new IllegalArgumentException("Invalid screen area");
-    return portrait ? new Rect(width * .04, height * .02, width * .96, height * .57)
-                    : new Rect(width * .26, height * .03, width * .74, height * .84);
+    return new Rect(width * .02, height * .02, width * .98, height * .98);
   }
   private static Rect fitRect(Rect area, double aspect) {
     double w = Math.min(area.width(), area.height() * aspect), h = w / aspect,

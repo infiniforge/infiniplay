@@ -2,7 +2,7 @@
 
 Version 0.4.2 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
 
-The 0.4.2 build adds a selectable N64 Bob shader pass after the existing GLideN64 field weave. It uses the current field parity to interpolate missing lines; device/game validation of the filter remains pending.
+N64 Bob deinterlacing is selectable per game and replaces the final GLES pass with direct core-framebuffer sampling. The near-full-view layout scales aspect-correct game images to the largest available size in portrait and landscape, preserving DS/3DS source proportions and hinge spacing. The latest Android build and native checks pass; visual acceptance of both the filter and enlarged layouts remains pending on device.
 
 The Termux native probe explicitly loads the staged `libc++_shared.so` by absolute path before opening any cores. It does not require `LD_LIBRARY_PATH` or `LD_PRELOAD`; APK libraries retain no Termux-specific RPATH. To verify the shell-independent path, run `env -u LD_LIBRARY_PATH -u LD_PRELOAD ./build.sh --max-workers=2 --console=plain`.
 
