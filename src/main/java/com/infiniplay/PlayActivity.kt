@@ -2,11 +2,9 @@ package com.infiniplay
 
 import android.app.*
 import android.content.*
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.*
-import android.provider.Settings
 import android.view.*
 import android.widget.*
 import com.infiniplay.core.*
@@ -27,7 +25,6 @@ class PlayActivity : Activity() {
     private lateinit var browser: EmbeddedFileBrowser
     private lateinit var statusText: TextView
     private var page = "recents"
-    private var storageAction: (() -> Unit)? = null
     private lateinit var collections: PlayCollections
     private var incoming: Intent? = null
     private var queuedIncoming: Intent? = null
@@ -92,8 +89,6 @@ class PlayActivity : Activity() {
                     if (!busy)
                         openSelection(item, favorite = action == "add_favorite", play = false)
                 }
-                canBrowseLocal = { hasStorage() }
-                onRequestLocalAccess = { withStorage { refresh() } }
                 onRequestOpen = {
                     picking = "game"
                     browse()
@@ -104,8 +99,7 @@ class PlayActivity : Activity() {
                 onError = { message("Storage", it) }
             }
         root.addView(browser, LinearLayout.LayoutParams(-1, 0, 1f))
-        if (hasStorage() && intent?.action !in listOf(Intent.ACTION_VIEW, Intent.ACTION_SEND))
-            showPage(page)
+        if (intent?.action !in listOf(Intent.ACTION_VIEW, Intent.ACTION_SEND)) showPage(page)
         else browser.open()
     }
 
@@ -119,7 +113,6 @@ class PlayActivity : Activity() {
                     "Display / controllers / about",
                     if (browser.breadcrumbsEnabled) "Hide breadcrumb trail"
                     else "Show breadcrumb trail",
-                    "Internal storage access",
                 )
             ) { _, n ->
                 when (n) {
@@ -129,7 +122,6 @@ class PlayActivity : Activity() {
                     3 -> {
                         browser.breadcrumbsEnabled = !browser.breadcrumbsEnabled
                     }
-                    4 -> withStorage { showPage(page) }
                 }
             }
             .show()
@@ -147,79 +139,13 @@ class PlayActivity : Activity() {
             .show()
     }
 
-    private fun hasStorage(): Boolean =
-        if (Build.VERSION.SDK_INT >= 30) Environment.isExternalStorageManager()
-        else
-            checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                PackageManager.PERMISSION_GRANTED
-
-    private fun withStorage(action: () -> Unit) {
-        if (hasStorage()) {
-            action()
-            return
-        }
-        storageAction = action
-        AlertDialog.Builder(this)
-            .setTitle("Internal storage access")
-            .setMessage(
-                "InfiniPlay keeps game links in Internal storage/infini/play. Allow file access to use Recents and Favorites."
-            )
-            .setPositiveButton("Allow") { _, _ ->
-                if (Build.VERSION.SDK_INT >= 30) {
-                    val intent =
-                        Intent(
-                            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                            Uri.parse("package:$packageName"),
-                        )
-                    runCatching { startActivityForResult(intent, 43) }
-                        .onFailure {
-                            startActivityForResult(
-                                Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
-                                43,
-                            )
-                        }
-                } else
-                    requestPermissions(
-                        arrayOf(
-                            android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        ),
-                        44,
-                    )
-            }
-            .setNegativeButton("Cancel") { _, _ ->
-                storageAction = null
-                incoming = null
-            }
-            .setOnCancelListener {
-                storageAction = null
-                incoming = null
-            }
-            .show()
-    }
-
-    private fun storageResult() {
-        val action = storageAction
-        storageAction = null
-        if (hasStorage()) action?.invoke()
-        else
-            message(
-                "Storage access",
-                "File access is needed to keep links in Internal storage/infini/play. You can retry from Setup.",
-            )
-    }
-
     private fun showPage(next: String) {
-        if (next != "open" && !hasStorage()) {
-            withStorage { showPage(next) }
-            return
-        }
         page = next
         work({
             if (next == "open") null
             else {
                 collections.initialize(store.games())
-                Uri.fromFile(collections.directory(next))
+                collections.directory(next)
             }
         }) { directory ->
             browser.sortByModified = next == "recents"
@@ -245,10 +171,6 @@ class PlayActivity : Activity() {
         favorite: Boolean? = null,
         play: Boolean = true,
     ) {
-        if (!hasStorage()) {
-            withStorage { openSelection(item, favorite, play) }
-            return
-        }
         if (favorite != null) {
             changeFavorite(item, favorite)
             return
@@ -404,16 +326,6 @@ class PlayActivity : Activity() {
         super.onNewIntent(intent)
         setIntent(intent)
         if (busy) queuedIncoming = intent else handleIncoming(intent)
-    }
-
-    @Deprecated("Activity permission bridge")
-    override fun onRequestPermissionsResult(
-        request: Int,
-        permissions: Array<out String>,
-        results: IntArray,
-    ) {
-        super.onRequestPermissionsResult(request, permissions, results)
-        if (request == 44) storageResult()
     }
 
     @Deprecated("Activity back bridge")
@@ -666,10 +578,6 @@ class PlayActivity : Activity() {
     @Deprecated("Android activity result bridge")
     override fun onActivityResult(request: Int, result: Int, data: Intent?) {
         super.onActivityResult(request, result, data)
-        if (request == 43) {
-            storageResult()
-            return
-        }
         if (request == 42) {
             if (result == RESULT_OK && data != null) {
                 StorageAccess.persist(this, data)
@@ -857,7 +765,7 @@ class PlayActivity : Activity() {
         super.onStart()
         router.start()
         refreshLibrary()
-        if (::browser.isInitialized && hasStorage()) browser.refresh()
+        if (::browser.isInitialized) browser.refresh()
     }
 
     override fun onStop() {

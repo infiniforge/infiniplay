@@ -2,7 +2,7 @@
 """Collect pinned-source license documents for the offline About dialog."""
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
-parts=['InfiniPlay 0.2.0\nCopyright 2026 InfiniForge contributors\nApp code: GPL-3.0-or-later. Emulator plugins retain their respective licenses.\nSource: https://github.com/infiniforge/infiniplay\nClone with --recurse-submodules for corresponding source.\nThe following includes notices from vendored source trees; not every source file is compiled.']
+parts=['InfiniPlay 0.2.1\nCopyright 2026 InfiniForge contributors\nApp code: GPL-3.0-or-later. Emulator plugins retain their respective licenses.\nSource: https://github.com/infiniforge/infiniplay\nClone with --recurse-submodules for corresponding source.\nThe following includes notices from vendored source trees; not every source file is compiled.']
 parts.append((ROOT/'docs/acknowledgments.md').read_text())
 header=ROOT/'third_party/libretrodroid/libretrodroid/src/main/cpp/libretro/libretro-common/include/libretro.h'
 parts.append('Libretro API header license\n'+header.read_text().split('*/',1)[0]+'*/')

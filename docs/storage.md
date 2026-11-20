@@ -4,7 +4,7 @@ All browsing uses `libinfiniselect` with a stable `infiniplay` client ID. Select
 
 Import and existing library reads share cartridge-extension detection. Unambiguous extensions override the selected/stored system; `.md`, `.gen` and `.smd` select Mega Drive/Genesis. Existing entries retain their IDs and files when their system is corrected, so reimport is unnecessary. Generic `.bin` and disc formats keep the selected system.
 
-Shared links live at `Internal storage/infini/play/{recents,favorites}/<system>/`; see [browser](browser.md) for permissions and deduplication. Source identities remain in links; native working files and saves remain private.
+InfiniSelect delegates collection writes and JSON directory listings to InfiniFolder; InfiniPlay has no broad storage permissions. Shared links live at `Internal storage/infini/play/{recents,favorites}/<system>/`; see [browser](browser.md) for permissions and deduplication. Source identities remain in links; native working files and saves remain private.
 
 Games are staged under `files/games/<UUID>/`, with their source identity stored in `games.json`. A manifest imports every referenced sibling recursively (M3U → CUE → BIN/WAV); order and relative subdirectories are retained. Absolute/network paths, parent traversal, nested M3U files and malformed/empty manifests are rejected. Limits: 512 referenced files, three nesting levels, 1 MiB manifest, 2 GiB individual media and 8 GiB complete set. Import failure removes its staged game directory. `.part` files never become catalog entries. Files needing siblings must be selected from a provider/directory granting access to those files; use InfiniFolder when SAF only grants one file. Import never writes back to selected sources.
 

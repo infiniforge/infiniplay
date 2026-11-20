@@ -21,7 +21,11 @@ with zipfile.ZipFile(apk) as z,tempfile.TemporaryDirectory(prefix='apk-check-',d
         deps=set(re.findall(r'\(NEEDED\).*\[([^]]+)\]',dynamic));assert deps<=allowed,(name,deps-allowed)
         assert 'libc++_shared.so'not in deps or 'lib/arm64-v8a/libc++_shared.so'in native,(name,'missing C++ runtime')
         assert '/data/data/'not in dynamic,(name,'local runtime path')
+    manifest=z.read('AndroidManifest.xml')
+    for permission in ('MANAGE_EXTERNAL_STORAGE','READ_EXTERNAL_STORAGE','WRITE_EXTERNAL_STORAGE'):
+        name='android.permission.'+permission
+        assert name.encode()not in manifest and name.encode('utf-16le')not in manifest,('Unexpected storage permission',name)
     assert 'classes.dex'in z.namelist()and 'assets/notices.txt'in z.namelist()
     notices=z.read('assets/notices.txt').decode()
     assert 'Thank you to the Libretro project'in notices and 'Libretro API header license'in notices
-print('APK verified: 13 cores, host, ARM64, 16 KiB pages, portable native dependencies and Libretro acknowledgments')
+print('APK verified: 13 cores, host, ARM64, 16 KiB pages, portable native dependencies, Libretro acknowledgments and no broad storage permissions')

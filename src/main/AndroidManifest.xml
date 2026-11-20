@@ -1,7 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-<uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
 <uses-feature android:name="android.hardware.usb.host" android:required="false"/>
 <uses-feature android:glEsVersion="0x00030000" android:required="true"/>
 <application android:label="InfiniPlay" android:theme="@style/PlayTheme" android:icon="@mipmap/ic_launcher" android:allowBackup="false">
