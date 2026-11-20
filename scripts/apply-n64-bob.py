@@ -47,7 +47,7 @@ bob = r'''    if (playN64BobEnabled) {
             "#define HIGHP mediump\n"
             "precision mediump float;\n"
             "#endif\n"
-            "uniform lowp sampler2D previousPass;\n"
+            "uniform lowp sampler2D texture;\n"
             "uniform HIGHP vec2 textureSize;\n"
             "uniform HIGHP float n64FieldParity;\n"
             "varying mediump vec2 coords;\n"
@@ -60,11 +60,13 @@ bob = r'''    if (playN64BobEnabled) {
             "  HIGHP float blend = clamp((y - y0) * 0.5, 0.0, 1.0);\n"
             "  HIGHP vec2 uv0 = vec2(coords.x, (y0 + 0.5) / h);\n"
             "  HIGHP vec2 uv1 = vec2(coords.x, (y1 + 0.5) / h);\n"
-            "  lowp vec3 a = texture2D(previousPass, uv0).rgb;\n"
-            "  lowp vec3 b = texture2D(previousPass, uv1).rgb;\n"
+            "  lowp vec3 a = texture2D(texture, uv0).rgb;\n"
+            "  lowp vec3 b = texture2D(texture, uv1).rgb;\n"
             "  gl_FragColor = vec4(mix(a, b, blend), 1.0);\n"
             "}\n";
-        shaders.passes.push_back({bobVertex, bobFragment, false, 1.0f});
+        // Sample the core framebuffer directly, avoiding an intermediate chained pass.
+        shaders.passes = {{bobVertex, bobFragment, true, 1.0f}};
+        shaders.linearTexture = true;
     }
 '''
 replace(
@@ -78,18 +80,6 @@ replace(
             const GLint parityHandle = glGetUniformLocation(shader.gProgram, "n64FieldParity");
             if (parityHandle != -1) {
                 glUniform1f(parityHandle, static_cast<float>(playN64BobFieldParity));
-                if (i > 0) {
-                    const auto previousPass = renderer->getPassData(i - 1);
-                    glUniform2f(
-                        shader.gTextureSizeHandle,
-                        static_cast<float>(previousPass.width.value_or(
-                            static_cast<unsigned int>(getTextureWidth())
-                        )),
-                        static_cast<float>(previousPass.height.value_or(
-                            static_cast<unsigned int>(getTextureHeight())
-                        ))
-                    );
-                }
             }
         }""",
 )
