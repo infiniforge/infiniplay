@@ -1,7 +1,11 @@
 package com.infiniplay
 
 import android.app.*
+import android.content.res.ColorStateList
 import android.content.pm.ActivityInfo
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.InsetDrawable
+import android.graphics.drawable.RippleDrawable
 import android.view.*
 import android.widget.*
 import com.infiniplay.core.*
@@ -24,6 +28,31 @@ object PlayUi {
             this.text = text
             isAllCaps = false
             minHeight = (48 * resources.displayMetrics.density).toInt()
+            setOnClickListener { action() }
+        }
+
+    fun sessionMenuButton(context: Activity, action: () -> Unit) =
+        TextView(context).apply {
+            text = "☰"
+            textSize = 20f
+            gravity = Gravity.CENTER
+            setTextColor(0xffd8e6ee.toInt())
+            contentDescription = "Pause and settings"
+            isClickable = true
+            isFocusable = true
+            val density = resources.displayMetrics.density
+            val shape =
+                GradientDrawable().apply {
+                    setColor(0xff0b1017.toInt())
+                    cornerRadius = 24 * density
+                    setStroke(density.toInt().coerceAtLeast(1), 0x66899aa6)
+                }
+            background = RippleDrawable(
+                ColorStateList.valueOf(0x3365dbca),
+                InsetDrawable(shape, (6 * density).toInt()),
+                null,
+            )
+            alpha = .62f
             setOnClickListener { action() }
         }
 
@@ -145,7 +174,7 @@ object PlayUi {
             AlertDialog.Builder(activity)
                 .setTitle("Hinge gap · native screen pixels")
                 .setMessage(
-                    "The gap scales with the screens in both orientations. DS defaults to 90 native pixels. Calibrate the 3DS gap for your hardware variant (0–300). Screen widths retain their original proportions."
+                    "The gap scales with the screens in both orientations. DS defaults to 80 native pixels. Calibrate the 3DS gap for your hardware variant (0–300). Screen widths retain their original proportions."
                 )
                 .setView(box)
                 .setNegativeButton("Cancel", null)

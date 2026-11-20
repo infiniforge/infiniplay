@@ -120,13 +120,6 @@ class SessionActivity : Activity(), LifecycleOwner {
             }
         setContentView(box)
         loadingOverlay = LoadingOverlay(this)
-        val toolbar = LinearLayout(this)
-        box.addView(toolbar)
-        toolbar.addView(
-            PlayUi.button(this, "☰  Pause / settings") { openMenu() },
-            LinearLayout.LayoutParams(0, -2, 1f),
-        )
-        toolbar.addView(PlayUi.label(this, game.name), LinearLayout.LayoutParams(0, -2, 1f))
         val area = FrameLayout(this)
         box.addView(area, LinearLayout.LayoutParams(-1, 0, 1f))
         retro = GLRetroView(this, data)
@@ -146,6 +139,18 @@ class SessionActivity : Activity(), LifecycleOwner {
                 onChanged = { store.saveLayout(game.system, portrait(), controls) }
             }
         area.addView(pad, FrameLayout.LayoutParams(-1, -1))
+        val density = resources.displayMetrics.density
+        area.addView(
+            PlayUi.sessionMenuButton(this) { openMenu() },
+            FrameLayout.LayoutParams(
+                (48 * density).toInt(),
+                (48 * density).toInt(),
+                Gravity.TOP or Gravity.LEFT,
+            ).apply {
+                leftMargin = (10 * density).toInt()
+                topMargin = (10 * density).toInt()
+            },
+        )
         mediaRow =
             LinearLayout(this).apply {
                 gravity = Gravity.CENTER_VERTICAL

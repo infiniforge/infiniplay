@@ -29,7 +29,7 @@ public final class ScreenLayout {
     double w = system.topWidth(), h = system.screenHeight(), total = 2 * h + gap;
     double scale = Math.min(area.width() / w, area.height() / total),
            x = (area.left + area.right - w * scale) / 2,
-           y = (area.top + area.bottom - total * scale) / 2;
+           y = area.top;
     Rect upper = new Rect(x, y, x + w * scale, y + h * scale);
     double bw = system.bottomWidth();
     Rect lower = new Rect((width - bw * scale) / 2, y + (h + gap) * scale, (width + bw * scale) / 2,
@@ -46,7 +46,7 @@ public final class ScreenLayout {
   }
   private static Rect fitRect(Rect area, double aspect) {
     double w = Math.min(area.width(), area.height() * aspect), h = w / aspect,
-           x = (area.left + area.right - w) / 2, y = (area.top + area.bottom - h) / 2;
+           x = (area.left + area.right - w) / 2, y = area.top;
     return new Rect(x, y, x + w, y + h);
   }
   /**

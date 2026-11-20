@@ -95,12 +95,24 @@ public class PlayCoreTest {
       }
   }
   @Test
+  public void gameScreensAnchorAtTopOfAvailableArea() {
+    for (Console s : Console.values())
+      for (boolean portrait : List.of(true, false)) {
+        double w = portrait ? 1080 : 1920, h = portrait ? 1920 : 1080;
+        var screens = ScreenLayout.fit(s, w, h, portrait, s.defaultGap);
+        assertEquals(ScreenLayout.availableArea(w, h, portrait).top(),
+            screens.get(0).destination().top(), .00001);
+      }
+  }
+  @Test
   public void dsHingeKeepsHardwareProportion() {
+    assertEquals(80, Console.DS.defaultGap, 0);
     for (boolean portrait : List.of(true, false)) {
-      var c = ScreenLayout.fit(Console.DS, 1080, 1920, portrait, 90);
+      var c = ScreenLayout.fit(Console.DS, 1080, 1920, portrait, Console.DS.defaultGap);
       double scale = c.get(0).destination().width() / 256;
       assertEquals(
-          90 * scale, c.get(1).destination().top() - c.get(0).destination().bottom(), .00001);
+          Console.DS.defaultGap * scale,
+          c.get(1).destination().top() - c.get(0).destination().bottom(), .00001);
     }
   }
   @Test

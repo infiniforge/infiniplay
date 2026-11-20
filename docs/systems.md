@@ -61,8 +61,8 @@ InfiniPlay 0.4.2 adds a per-game Bob deinterlacing toggle for N64. It starts off
 The user confirmed N64 and DS playback on 2026-11-20. PlayStation, PSP and 3DS
 remain implemented but unconfirmed on Android with retail games. N64 and PSP
 use GLES; Citra requires OpenGL ES 3.2 and the launcher rejects older GPUs
-clearly. DS/3DS retain separate hardware-spaced screens and bottom-screen touch
-input. Citra uses the exact zero-gap top/bottom core layout and native
+clearly. DS/3DS retain stacked screens with bottom-screen touch input. Displays
+align near the top of the play area; the DS default gap is 80 native pixels. Citra uses the exact zero-gap top/bottom core layout and native
 resolution; the app supplies the physical gap. Encrypted 3DS games, CIA
 installation and DSi are not supported by this profile. PSP core assets are
 installed in private storage automatically before launch. PlayStation uses the
