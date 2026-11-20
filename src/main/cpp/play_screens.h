@@ -6,6 +6,22 @@
 #include <array>
 static std::array<float, 16> playScreens{};
 static int playScreenCount = 0;
+static bool playN64BobEnabled = false;
+static int playN64BobFieldParity = 0;
+static bool playN64BobFreshFrame = false;
+extern "C" JNIEXPORT void JNICALL
+Java_com_infiniplay_NativeScreens_setN64Deinterlace(JNIEnv*, jclass, jboolean enabled) {
+  playN64BobEnabled = enabled == JNI_TRUE;
+  playN64BobFieldParity = 0;
+  playN64BobFreshFrame = false;
+}
+static void playN64BobMarkFrame() {
+  if (playN64BobEnabled) playN64BobFreshFrame = true;
+}
+static void playN64BobAdvanceField() {
+  if (playN64BobEnabled && playN64BobFreshFrame) playN64BobFieldParity ^= 1;
+  playN64BobFreshFrame = false;
+}
 extern "C" JNIEXPORT void JNICALL
 Java_com_infiniplay_NativeScreens_set(JNIEnv* env, jclass, jfloatArray values) {
   const int size = values ? env->GetArrayLength(values) : 0;

@@ -47,6 +47,13 @@ class PlayStore(private val context: Context) {
         update("settings.json") { it.put("virtualBoyDisplay", value) }
     }
 
+    fun n64Deinterlace(gameId: String) =
+        read("settings.json").optBoolean("n64Deinterlace.$gameId", false)
+
+    fun n64Deinterlace(gameId: String, enabled: Boolean) {
+        update("settings.json") { it.put("n64Deinterlace.$gameId", enabled) }
+    }
+
     fun orientation() =
         read("settings.json").optInt("orientation", ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR)
 

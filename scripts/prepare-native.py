@@ -46,6 +46,7 @@ write(out/'fceumm-sources.cmake','set(FCEUMM_SOURCES\n'+''.join('  "'+str(p.reso
 
 import subprocess
 subprocess.run(["python3",str(ROOT/"scripts/prepare-extra-cores.py")],check=True)
+subprocess.run(["python3",str(ROOT/"scripts/apply-n64-bob.py")],check=True)
 
 source=ROOT/'third_party/libretrodroid/libretrodroid/src/main/cpp/input.cpp'
 s=source.read_text().replace('#include "input.h"','#include "input.h"\n#include "play_keyboard.h"')

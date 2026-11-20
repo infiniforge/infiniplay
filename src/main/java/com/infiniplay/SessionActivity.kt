@@ -209,6 +209,9 @@ class SessionActivity : Activity(), LifecycleOwner {
                                 if (game.system == Console.ATARI5200)
                                     retro.setControllerType(p, 769)
                             }
+                            NativeScreens.setN64Deinterlace(
+                                core.id() == "mupen64plus_next" && store.n64Deinterlace(game.id)
+                            )
                         }
                         geometry()
                         mediaCommand(0, 0)
@@ -423,21 +426,25 @@ class SessionActivity : Activity(), LifecycleOwner {
     private fun openMenu() {
         if (!ready || menu) return
         pauseForMenu()
+        val menuItems =
+            mutableListOf(
+                "Resume",
+                "Save state",
+                "Load state",
+                "Edit controls",
+                "Controllers",
+                "Screen orientation",
+                "Screen spacing",
+                "Reset game",
+                "Return to library",
+            )
+        if (core.id() == "mupen64plus_next") {
+            val mode = if (store.n64Deinterlace(game.id)) "On" else "Off"
+            menuItems.add("N64 bob deinterlacing: $mode")
+        }
         AlertDialog.Builder(this)
             .setTitle(game.name)
-            .setItems(
-                arrayOf(
-                    "Resume",
-                    "Save state",
-                    "Load state",
-                    "Edit controls",
-                    "Controllers",
-                    "Screen orientation",
-                    "Screen spacing",
-                    "Reset game",
-                    "Return to library",
-                )
-            ) { _, n ->
+            .setItems(menuItems.toTypedArray()) { _, n ->
                 when (n) {
                     0 -> resumeFromMenu()
                     1 -> {
@@ -468,6 +475,16 @@ class SessionActivity : Activity(), LifecycleOwner {
                     8 -> {
                         resumeFromMenu()
                         quit()
+                    }
+                    9 -> {
+                        val enabled = !store.n64Deinterlace(game.id)
+                        store.n64Deinterlace(game.id, enabled)
+                        retro.queueEvent { NativeScreens.setN64Deinterlace(enabled) }
+                        resumeFromMenu()
+                        toast(
+                            if (enabled) "N64 bob deinterlacing enabled"
+                            else "N64 bob deinterlacing disabled"
+                        )
                     }
                 }
             }

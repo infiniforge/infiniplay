@@ -12,8 +12,8 @@ android {
         applicationId = "com.infiniplay"
         minSdk = 26
         targetSdk = 35
-        versionCode = 13
-        versionName = "0.4.0"
+        versionCode = 14
+        versionName = "0.4.1"
         ndk { abiFilters.add("arm64-v8a") }
         if (!termuxNative) externalNativeBuild { cmake { arguments += "-DANDROID_STL=c++_static" } }
     }
@@ -44,6 +44,7 @@ val prepareHost by
         commandLine("python3", "scripts/prepare-native.py")
         inputs.files(
             file("scripts/prepare-native.py"),
+            file("scripts/apply-n64-bob.py"),
             file("scripts/prepare-extra-cores.py"),
             file("third-party.lock.json"),
             file("src/main/cpp/play_screens.h"),
