@@ -4,6 +4,18 @@ The home screen has a top-left hamburger setup menu and Recents, Favorites and O
 
 Selecting a game immediately stages necessary core working content and starts playback after missing firmware/core prompts. Extensions and bounded cartridge signatures detect known systems. Ambiguous files request a console once, retained in link metadata; there is no persistent system chooser. ACTION_VIEW and single-file ACTION_SEND use the same .iflink resolution, import/deduplication, recent-link and launch pipeline. Core choices persist per system.
 
+During selection resolution, content staging and launch, a full-window loading
+scrim blocks taps on the embedded Folder surface and the launcher controls.
+It uses 50% black in Android dark mode or 50% white in light mode, with a large
+animated spinner and Opening/Preparing/Starting text. A separate modal window
+covers Folder's topmost SurfaceView. The emulator keeps the indicator visible
+until its first rendered frame. The launch gate also rejects repeat callbacks
+and queued View/Share launches wait until the current launch returns.
+System/core/firmware prompts remain interactive without the loading scrim;
+other game selections remain blocked until that launch completes or is cancelled.
+Errors and cancellation release the gate. Rotation refreshes the overlay's colors;
+backgrounding hides it and resuming restores it if work is still running.
+
 The old private library is seeded into shared recent links on first collection setup; game IDs, working copies and saves are kept.
 
 Opened sources get version-1 `.iflink` files in their system's recent directory. Repeated opens reuse the same source link and update its modification time. Links target original authoritative resources rather than expiring access relays; they do not contain ROM data. Existing user-named links are reused too. Long-press any game file or game shortcut for **Open in emulator**, including ISO images and ZIP archives. This returns the whole selected file to Play's normal source-resolution, system/core selection, recent-link, firmware and launch pipeline. A normal tap on a browsable container still enters it in Folder. The long-press menu also offers Add to favorites, or Remove favorite on the Favorites page. InfiniPlay supplies these actions through the reusable InfiniSelect `fileActions`/`onFileAction` hooks; Folder renders the menu and the gateway returns the action ID. The floating game picker receives the same Open in emulator and Add to favorites actions. The firmware picker offers **Use as firmware**, so a BIOS ZIP or disk-image filename can be selected as a whole file without entering it. Firmware selection continues through size/archive validation; it never launches as a game. Favorites actions only read/write the link; they do not launch, import or require access to the game target. Removing a favorite deletes only its link. Cyclic, oversized or over-deep links fail visibly.

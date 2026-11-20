@@ -32,6 +32,8 @@ class SessionActivity : Activity(), LifecycleOwner {
 
     private val axes = mutableMapOf<String, Axis>()
     private val worker = Executors.newSingleThreadExecutor()
+    private lateinit var loadingOverlay: LoadingOverlay
+    private var starting = true
     private var ready = false
     private var active = false
     private var menu = false
@@ -117,6 +119,7 @@ class SessionActivity : Activity(), LifecycleOwner {
                 fitsSystemWindows = true
             }
         setContentView(box)
+        loadingOverlay = LoadingOverlay(this)
         val toolbar = LinearLayout(this)
         box.addView(toolbar)
         toolbar.addView(
@@ -211,6 +214,10 @@ class SessionActivity : Activity(), LifecycleOwner {
                         mediaCommand(0, 0)
                     }
                     is GLRetroView.GLRetroEvents.FrameRendered -> {
+                        if (starting) {
+                            starting = false
+                            loadingOverlay.hide()
+                        }
                         if (++frames % 120 == 0) mediaCommand(0, 0)
                     }
                 }
@@ -220,6 +227,8 @@ class SessionActivity : Activity(), LifecycleOwner {
             retro.getGLRetroErrors().collect { code ->
                 if (!closing) {
                     ready = false
+                    starting = false
+                    loadingOverlay.hide()
                     AlertDialog.Builder(this@SessionActivity)
                         .setTitle("Core could not run")
                         .setMessage(
@@ -320,7 +329,7 @@ class SessionActivity : Activity(), LifecycleOwner {
     }
 
     private fun keys(source: String, port: Int, keys: Set<Int>) {
-        if (!ready || menu || !active) return
+        if (!ready || starting || menu || !active) return
         applyChanges(port, digital[port].update(source, keys))
     }
 
@@ -334,13 +343,14 @@ class SessionActivity : Activity(), LifecycleOwner {
                 port,
                 digital[port].update(
                     source + ":digital",
-                    if (active && !menu) PadLayout.digitalAxes(x.toDouble(), y.toDouble())
+                    if (active && !starting && !menu)
+                        PadLayout.digitalAxes(x.toDouble(), y.toDouble())
                     else emptySet(),
                 ),
             )
         }
         if (x == 0f && y == 0f) axes.remove(source)
-        else if (active && !menu) axes[source] = Axis(port, stick, x, y)
+        else if (active && !starting && !menu) axes[source] = Axis(port, stick, x, y)
         val values = axes.values.filter { it.port == port && it.stick == stick }
         fun strongest(get: (Axis) -> Float): Float =
             values.maxByOrNull { abs(get(it)) }?.let(get) ?: 0f
@@ -594,10 +604,13 @@ class SessionActivity : Activity(), LifecycleOwner {
     override fun onResume() {
         super.onResume()
         active = true
+        if (starting && ::loadingOverlay.isInitialized)
+            loadingOverlay.show("Starting ${game.name}…")
         if (::retro.isInitialized && !menu) registry.currentState = Lifecycle.State.RESUMED
     }
 
     override fun onPause() {
+        if (::loadingOverlay.isInitialized) loadingOverlay.hide()
         if (::pad.isInitialized) {
             pad.release()
             clear("")
@@ -615,6 +628,7 @@ class SessionActivity : Activity(), LifecycleOwner {
     }
 
     override fun onDestroy() {
+        if (::loadingOverlay.isInitialized) loadingOverlay.hide()
         ready = false
         if (::retro.isInitialized) registry.currentState = Lifecycle.State.DESTROYED
         worker.shutdown()
@@ -623,6 +637,8 @@ class SessionActivity : Activity(), LifecycleOwner {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
+        if (active && starting && ::loadingOverlay.isInitialized)
+            loadingOverlay.show("Starting ${game.name}…")
         pad.post { geometry() }
     }
 

@@ -4,7 +4,7 @@ Status: `[ ]` unimplemented · `[?]` implemented but untested · `[x]` tested.
 
 A system is **tested** here only after interactive device/game validation. Automated tests are listed separately in [validation](validation.md); native synthetic probes do not certify game compatibility. A controller profile/manual core-import path counts as implemented but untested and is identified below.
 
-Device playback confirmed by the user on 2026-11-19 for the fifteen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
+Device playback confirmed by the user on 2026-11-19 for the seventeen checked systems below. This records reported playback, not exhaustive game, save, controller or lifecycle coverage.
 
 The first core bundle focuses on systems through the SNES era plus Sega add-ons, Neo Geo and Virtual Boy. Version 0.3.0 adds GBA, Neo Geo Pocket/Color and WonderSwan/Color; generated-program checks do not mark them device-tested. This document preserves the full longer-term system list. See [bundled systems](systems.md) for formats and firmware.
 
@@ -26,7 +26,7 @@ The first core bundle focuses on systems through the SNES era plus Sega add-ons,
 - [x] Game Boy Color
 - [x] Virtual Boy
 - [?] Nintendo 64 — profile and manual core import only
-- [?] Game Boy Advance — bundled mGBA; gpSP remains a manual core import
+- [x] Game Boy Advance — bundled mGBA; gpSP remains a manual core import
 - [ ] GameCube
 - [?] Nintendo DS / DSi — profile and manual core import only; DS layout exists, DSi support remains unimplemented
 - [?] Nintendo 3DS — profile and manual core import only
@@ -57,7 +57,7 @@ The first core bundle focuses on systems through the SNES era plus Sega add-ons,
 
 - [?] Neo Geo AES / MVS
 - [ ] Neo Geo CD
-- [?] Neo Geo Pocket
+- [x] Neo Geo Pocket
 - [?] Neo Geo Pocket Color
 
 ## Sony

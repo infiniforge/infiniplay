@@ -20,7 +20,14 @@ class PlayActivity : Activity() {
     private var pendingGame: String? = null
     private var picking = "game"
     private var firmwareName = ""
-    private var busy = false
+    private val progress = LaunchProgress()
+    private val busy
+        get() = progress.blocked()
+
+    private lateinit var loadingOverlay: LoadingOverlay
+    private var loadingLabel = "Loading…"
+    private var resumed = false
+    private var restorePendingLaunch = false
     private val worker = Executors.newSingleThreadExecutor()
     private lateinit var browser: EmbeddedFileBrowser
     private lateinit var statusText: TextView
@@ -40,6 +47,8 @@ class PlayActivity : Activity() {
                 .getOrDefault(Console.NES)
         coreId = state?.getString("core") ?: "quicknes"
         pendingGame = state?.getString("pending")
+        restorePendingLaunch = pendingGame != null
+        if (restorePendingLaunch) progress.beginSelection()
         picking = state?.getString("picking") ?: "game"
         firmwareName = state?.getString("firmware") ?: ""
         requestedOrientation = store.orientation()
@@ -56,9 +65,11 @@ class PlayActivity : Activity() {
                 fitsSystemWindows = true
             }
         setContentView(root)
+        loadingOverlay = LoadingOverlay(this)
         val top = LinearLayout(this)
         top.addView(
-            PlayUi.button(this, "☰") { setupMenu() }.apply { contentDescription = "Setup menu" }
+            PlayUi.button(this, "☰") { if (!busy) setupMenu() }
+                .apply { contentDescription = "Setup menu" }
         )
         top.addView(PlayUi.label(this, "InfiniPlay", 24f), LinearLayout.LayoutParams(0, -2, 1f))
         root.addView(top)
@@ -77,12 +88,14 @@ class PlayActivity : Activity() {
             EmbeddedFileBrowser(this).apply {
                 selectLinkDocuments =
                     true // Play owns the system hint stored in its .iflink documents.
-                onSelected = { if (!busy) openSelection(it) }
+                onSelected = { if (progress.beginSelection()) openSelection(it) }
                 fileActions = gameFileActions()
                 onFileAction = { action, item -> if (!busy) handleGameFileAction(action, item) }
                 onRequestOpen = {
-                    picking = "game"
-                    browse()
+                    if (!busy) {
+                        picking = "game"
+                        browse()
+                    }
                 }
                 onError = { message("Storage", it) }
             }
@@ -156,14 +169,19 @@ class PlayActivity : Activity() {
     private fun handleGameFileAction(action: String?, item: SelectionItem) {
         when (action) {
             null,
-            "open_emulator" -> openSelection(item)
+            "open_emulator" -> if (progress.beginSelection()) openSelection(item)
             "add_favorite" -> openSelection(item, favorite = true, play = false)
             "remove_favorite" -> openSelection(item, favorite = false, play = false)
         }
     }
 
     private fun refreshLibrary() {
-        if (::statusText.isInitialized) statusText.text = if (busy) "Opening…" else ""
+        if (::statusText.isInitialized)
+            statusText.text = if (progress.loading()) loadingLabel else ""
+        if (::loadingOverlay.isInitialized) {
+            if (resumed && progress.loading()) loadingOverlay.show(loadingLabel)
+            else loadingOverlay.hide()
+        }
     }
 
     private data class Opened(
@@ -231,10 +249,12 @@ class PlayActivity : Activity() {
                         bytes.copyOf(offset)
                     }
                 Opened(selected, hint ?: known?.system, MediaSystem.identify(selected.name, header))
-            }
+            },
+            label = "Opening ${item.name}…",
         ) { opened ->
             val directory = opened.directory
             if (directory != null) {
+                progress.release()
                 page = "open"
                 browser.fileActions = gameFileActions(false)
                 browser.sortByModified = false
@@ -249,7 +269,8 @@ class PlayActivity : Activity() {
                         .setItems(systems.map { it.title }.toTypedArray()) { _, i ->
                             finishOpening(opened.item, systems[i], favorite, play)
                         }
-                        .setNegativeButton("Cancel", null)
+                        .setNegativeButton("Cancel") { _, _ -> cancelOpening() }
+                        .setOnCancelListener { cancelOpening() }
                         .show()
                 }
             }
@@ -299,18 +320,21 @@ class PlayActivity : Activity() {
         favorite: Boolean?,
         play: Boolean,
     ) {
-        work({
-            collections.initialize(store.games())
-            val game =
-                store.games().firstOrNull {
-                    it.source == item.authoritativeUri.toString() && it.system == selected
-                } ?: MediaImport(this).game(item, selected).also { store.addGame(it) }
-            collections.directory("favorites", game.system)
-            collections.link("recents", game)
-            if (favorite == true) collections.link("favorites", game)
-            if (favorite == false) collections.removeFavorite(game)
-            game
-        }) { game ->
+        work(
+            {
+                collections.initialize(store.games())
+                val game =
+                    store.games().firstOrNull {
+                        it.source == item.authoritativeUri.toString() && it.system == selected
+                    } ?: MediaImport(this).game(item, selected).also { store.addGame(it) }
+                collections.directory("favorites", game.system)
+                collections.link("recents", game)
+                if (favorite == true) collections.link("favorites", game)
+                if (favorite == false) collections.removeFavorite(game)
+                game
+            },
+            label = "Preparing ${item.name}…",
+        ) { game ->
             system = game.system
             coreId = store.preferredCore(system)
             incoming = null
@@ -318,6 +342,7 @@ class PlayActivity : Activity() {
                 pendingGame = game.id
                 launchPending()
             } else {
+                progress.release()
                 browser.refresh()
                 Toast.makeText(
                         this,
@@ -338,7 +363,7 @@ class PlayActivity : Activity() {
                 data.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                     ?: data.clipData?.getItemAt(0)?.uri
             } else data?.data
-        if (uri == null) return
+        if (uri == null || !progress.beginSelection()) return
         val result = Intent(data).setData(uri)
         StorageAccess.persist(this, result)
         work({ InfiniSelect.readResult(this, result).items.single() }) { openSelection(it) }
@@ -618,13 +643,21 @@ class PlayActivity : Activity() {
         }
         if (request != 41) return
         if (result != RESULT_OK || data == null) {
-            pendingGame = null
+            cancelOpening()
             return
         }
         StorageAccess.persist(this, data)
         if (picking == "game") {
+            if (!progress.beginSelection()) return
             work({ InfiniSelect.readResult(this, data) }) { selected ->
-                handleGameFileAction(selected.actionId, selected.items.single())
+                when (selected.actionId) {
+                    null,
+                    "open_emulator" -> openSelection(selected.items.single())
+                    else -> {
+                        progress.release()
+                        handleGameFileAction(selected.actionId, selected.items.single())
+                    }
+                }
             }
             return
         }
@@ -711,10 +744,16 @@ class PlayActivity : Activity() {
     }
 
     private fun launchPending() {
-        val game = store.games().firstOrNull { it.id == pendingGame } ?: return
+        restorePendingLaunch = false
+        val game =
+            store.games().firstOrNull { it.id == pendingGame }
+                ?: run {
+                    cancelOpening()
+                    return
+                }
         val core = CoreCatalog.get(coreId)
         if (core.system() != game.system) {
-            pendingGame = null
+            cancelOpening()
             message("Wrong core", "Choose a core for ${game.system.title}.")
             return
         }
@@ -728,8 +767,8 @@ class PlayActivity : Activity() {
                     picking = "core"
                     browse()
                 }
-                .setNegativeButton("Cancel") { _, _ -> pendingGame = null }
-                .setOnCancelListener { pendingGame = null }
+                .setNegativeButton("Cancel") { _, _ -> cancelOpening() }
+                .setOnCancelListener { cancelOpening() }
                 .show()
             return
         }
@@ -746,39 +785,65 @@ class PlayActivity : Activity() {
                     picking = "firmware"
                     browse()
                 }
-                .setNegativeButton("Cancel") { _, _ -> pendingGame = null }
-                .setOnCancelListener { pendingGame = null }
+                .setNegativeButton("Cancel") { _, _ -> cancelOpening() }
+                .setOnCancelListener { cancelOpening() }
                 .show()
             return
         }
-        pendingGame = null
+        progress.handOff()
+        loadingLabel = "Starting ${game.name}…"
+        refreshLibrary()
         startActivity(
             Intent(this, SessionActivity::class.java)
                 .putExtra("game", game.id)
                 .putExtra("core", coreId)
         )
+        pendingGame = null
     }
 
-    private fun <T> work(action: () -> T, done: (T) -> Unit) {
-        busy = true
+    private fun <T> work(action: () -> T, label: String = "Loading…", done: (T) -> Unit) {
+        progress.beginWork()
+        loadingLabel = label
         refreshLibrary()
         worker.execute {
             val result = runCatching(action)
             runOnUiThread {
                 if (!isDestroyed) {
-                    busy = false
-                    result.fold(done) {
+                    try {
+                        result.getOrThrow().let(done)
+                    } catch (error: Exception) {
                         pendingGame = null
-                        message("Unable to import", it.message ?: it.javaClass.simpleName)
-                    }
-                    refreshLibrary()
-                    if (!busy && queuedIncoming != null) {
-                        val next = queuedIncoming
-                        queuedIncoming = null
-                        handleIncoming(next)
+                        restorePendingLaunch = false
+                        progress.release()
+                        message("Unable to import", error.message ?: error.javaClass.simpleName)
+                    } finally {
+                        progress.finishWork()
+                        resumePendingLaunch()
+                        refreshLibrary()
+                        drainIncoming()
                     }
                 }
             }
+        }
+    }
+
+    private fun cancelOpening() {
+        restorePendingLaunch = false
+        pendingGame = null
+        progress.release()
+        refreshLibrary()
+        drainIncoming()
+    }
+
+    private fun resumePendingLaunch() {
+        if (resumed && restorePendingLaunch && !progress.loading()) launchPending()
+    }
+
+    private fun drainIncoming() {
+        if (resumed && !busy && queuedIncoming != null) {
+            val next = queuedIncoming
+            queuedIncoming = null
+            handleIncoming(next)
         }
     }
 
@@ -797,18 +862,36 @@ class PlayActivity : Activity() {
         if (::browser.isInitialized) browser.refresh()
     }
 
+    override fun onResume() {
+        super.onResume()
+        resumed = true
+        if (progress.handingOff()) progress.release()
+        resumePendingLaunch()
+        refreshLibrary()
+        drainIncoming()
+    }
+
+    override fun onPause() {
+        resumed = false
+        loadingOverlay.hide()
+        super.onPause()
+    }
+
     override fun onStop() {
+        loadingOverlay.hide()
         router.stop()
         super.onStop()
     }
 
     override fun onDestroy() {
+        loadingOverlay.hide()
         worker.shutdownNow()
         super.onDestroy()
     }
 
     override fun onConfigurationChanged(config: Configuration) {
         super.onConfigurationChanged(config)
+        refreshLibrary()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent) =
