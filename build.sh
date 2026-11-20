@@ -15,7 +15,7 @@ if [ -n "${TERMUX_VERSION:-}" ]; then
     PLAY_AAPT2=$(command -v aapt2)
     set -- "-Pandroid.aapt2FromMavenOverride=$PLAY_AAPT2" -PtermuxNative=true "$@"
 fi
-./gradlew :play-core:test assembleDebug testDebugUnitTest "$@"
+./gradlew :play-core:test :libinfiniselect:select-android:testDebugUnitTest assembleDebug testDebugUnitTest "$@"
 if [ -n "${TERMUX_VERSION:-}" ]; then python3 scripts/test-native-cores.py; fi
 cp build/outputs/apk/debug/*.apk InfiniPlay-debug.apk
 python3 scripts/verify-apk.py

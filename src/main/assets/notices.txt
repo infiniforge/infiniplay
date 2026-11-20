@@ -1,4 +1,4 @@
-InfiniPlay 0.1.0
+InfiniPlay 0.2.0
 Copyright 2026 InfiniForge contributors
 App code: GPL-3.0-or-later. Emulator plugins retain their respective licenses.
 Source: https://github.com/infiniforge/infiniplay
@@ -48,7 +48,7 @@ dependencies.lock.json
   "repositories": {
     "libinfiniselect": {
       "url": "https://github.com/infiniforge/libinfiniselect.git",
-      "commit": "bef55c7c650b472b6e275088de684f83a4b064e0"
+      "commit": "5e0ec618d45b2cacb7b3351de86b94942caa2267"
     },
     "libinfinistream": {
       "url": "https://github.com/infiniforge/libinfinistream.git",

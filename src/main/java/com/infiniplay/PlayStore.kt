@@ -85,6 +85,16 @@ class PlayStore(private val context: Context) {
         update("settings.json") { it.put("gap.${system.name}", value) }
     }
 
+    fun preferredCore(system: Console): String =
+        read("settings.json").optString("core.${system.name}").takeIf { id ->
+            CoreCatalog.ALL.any { it.id() == id && it.system() == system }
+        } ?: CoreCatalog.ALL.first { it.system() == system }.id()
+
+    fun preferredCore(system: Console, id: String) {
+        require(CoreCatalog.get(id).system() == system)
+        update("settings.json") { it.put("core.${system.name}", id) }
+    }
+
     fun corePath(id: String): String? =
         read("cores.json")
             .optString(id)

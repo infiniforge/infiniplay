@@ -15,3 +15,5 @@ InfiniPlay owns its Android library, controller UI, session lifecycle, imported 
 Documentation index: `README.md`, `docs/README.md`, `docs/APPLICATION.md`, `docs/architecture.md`, `docs/storage.md`, `docs/validation.md`, `docs/third-party.md`, `docs/acknowledgments.md`, `docs/ECOSYSTEM.md`, `docs/ROADMAP.md` and `docs/systems.md`.
 
 The user-owned roadmap lives in `docs/ROADMAP.md`. Preserve its system list and three statuses: `[ ]` unimplemented, `[?]` implemented but untested, `[x]` tested. Record the test scope; do not turn synthetic-core checks into claims of device/game validation.
+
+The home screen uses libinfiniselect EmbeddedFileBrowser. All game entry points share immediate launch and shared .iflink collections; see `docs/browser.md`. Do not restore a persistent system chooser or separate import-and-tap flow.

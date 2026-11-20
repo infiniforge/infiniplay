@@ -327,4 +327,16 @@ public class PlayCoreTest {
     assertEquals(Console.MASTERSYSTEM, MediaSystem.fromFilename("game.sms", Console.MEGADRIVE));
     assertEquals(Console.SG1000, MediaSystem.fromFilename("game.sg", Console.MEGADRIVE));
   }
+  @Test
+  public void automaticOpenRecognizesSystemsAndDoesNotGuessAmbiguousDiscs() {
+    assertEquals(Console.GBA,MediaSystem.identify("game.gba",new byte[0]));
+    assertEquals(Console.DS,MediaSystem.identify("game.nds",new byte[0]));
+    assertEquals(Console.N64,MediaSystem.identify("game.Z64",new byte[0]));
+    assertEquals(Console.THREEDS,MediaSystem.identify("game.3ds",new byte[0]));
+    assertNull(MediaSystem.identify("disc.chd",new byte[0]));
+    assertNull(MediaSystem.identify("ambiguous.bin",new byte[512]));
+    byte[] sega=new byte[512];sega[256]='S';sega[257]='E';sega[258]='G';sega[259]='A';
+    assertEquals(Console.MEGADRIVE,MediaSystem.identify("cartridge.bin",sega));
+    assertEquals(Console.NES,MediaSystem.identify("cartridge.rom",new byte[]{'N','E','S',0x1a}));
+  }
 }

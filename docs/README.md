@@ -5,6 +5,7 @@
 - [Application responsibilities and status](APPLICATION.md)
 - [Bundled systems and firmware](systems.md)
 - [Architecture, input and rendering](architecture.md)
+- [Browser, recents, favorites and incoming files](browser.md)
 - [Storage, firmware and multi-disc imports](storage.md)
 - [Validation and remaining device checks](validation.md)
 - [Acknowledgments](acknowledgments.md)

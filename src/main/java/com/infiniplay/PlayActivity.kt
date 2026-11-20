@@ -2,8 +2,11 @@ package com.infiniplay
 
 import android.app.*
 import android.content.*
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.*
+import android.provider.Settings
 import android.view.*
 import android.widget.*
 import com.infiniplay.core.*
@@ -13,8 +16,6 @@ import java.util.concurrent.Executors
 
 class PlayActivity : Activity() {
     private lateinit var store: PlayStore
-    private lateinit var pad: PadView
-    private lateinit var list: LinearLayout
     private lateinit var root: LinearLayout
     private var system = Console.NES
     private var coreId = "quicknes"
@@ -23,12 +24,20 @@ class PlayActivity : Activity() {
     private var firmwareName = ""
     private var busy = false
     private val worker = Executors.newSingleThreadExecutor()
+    private lateinit var browser: EmbeddedFileBrowser
+    private lateinit var statusText: TextView
+    private var page = "recents"
+    private var storageAction: (() -> Unit)? = null
+    private lateinit var collections: PlayCollections
+    private var incoming: Intent? = null
+    private var queuedIncoming: Intent? = null
     private lateinit var router: GamepadRouter
-    private val digital = DigitalInput()
 
     override fun onCreate(state: Bundle?) {
         super.onCreate(state)
         store = PlayStore(this)
+        collections = PlayCollections(this)
+        page = state?.getString("page") ?: "recents"
         system =
             runCatching { Console.valueOf(state?.getString("system") ?: "NES") }
                 .getOrDefault(Console.NES)
@@ -37,27 +46,9 @@ class PlayActivity : Activity() {
         picking = state?.getString("picking") ?: "game"
         firmwareName = state?.getString("firmware") ?: ""
         requestedOrientation = store.orientation()
-        router =
-            GamepadRouter(
-                this,
-                { s, _, k ->
-                    digital.update(s, k)
-                    if (::pad.isInitialized) {
-                        pad.pressed = digital.held()
-                        pad.invalidate()
-                    }
-                },
-                { _, _, _, _, _ -> },
-                { prefix ->
-                    digital.removePrefix(prefix)
-                    if (::pad.isInitialized) {
-                        pad.pressed = digital.held()
-                        pad.invalidate()
-                    }
-                },
-                {},
-            )
+        router = GamepadRouter(this, { _, _, _ -> }, { _, _, _, _, _ -> }, {}, {})
         build()
+        if (state == null) handleIncoming(intent)
     }
 
     private fun build() {
@@ -68,109 +59,366 @@ class PlayActivity : Activity() {
                 fitsSystemWindows = true
             }
         setContentView(root)
-        root.addView(PlayUi.label(this, "InfiniPlay", 24f))
-        val toolbar = LinearLayout(this)
-        root.addView(toolbar)
-        toolbar.addView(
-            PlayUi.button(this, "Import game") {
-                if (!busy) {
+        val top = LinearLayout(this)
+        top.addView(
+            PlayUi.button(this, "☰") { setupMenu() }.apply { contentDescription = "Setup menu" }
+        )
+        top.addView(PlayUi.label(this, "InfiniPlay", 24f), LinearLayout.LayoutParams(0, -2, 1f))
+        root.addView(top)
+        val tabs = LinearLayout(this)
+        for ((id, label) in
+            listOf("recents" to "Recents", "favorites" to "Favorites", "open" to "Open")) {
+            tabs.addView(
+                PlayUi.button(this, label) { if (!busy) showPage(id) },
+                LinearLayout.LayoutParams(0, -2, 1f),
+            )
+        }
+        root.addView(tabs)
+        statusText = PlayUi.label(this, "")
+        root.addView(statusText)
+        browser =
+            EmbeddedFileBrowser(this).apply {
+                onSelected = { if (!busy) openSelection(it) }
+                fileActions = {
+                    if (busy) emptyList()
+                    else
+                        listOf(
+                            if (page == "favorites")
+                                SelectionAction("remove_favorite", "Remove favorite")
+                            else SelectionAction("add_favorite", "Add to favorites")
+                        )
+                }
+                onFileAction = { action, item ->
+                    if (!busy)
+                        openSelection(item, favorite = action == "add_favorite", play = false)
+                }
+                canBrowseLocal = { hasStorage() }
+                onRequestLocalAccess = { withStorage { refresh() } }
+                onRequestOpen = {
                     picking = "game"
                     browse()
                 }
-            },
-            LinearLayout.LayoutParams(0, -2, 1f),
-        )
-        toolbar.addView(
-            PlayUi.button(this, "Settings") { settings() },
-            LinearLayout.LayoutParams(0, -2, 1f),
-        )
-        val systems = Console.values()
-        val spinner = Spinner(this)
-        spinner.adapter =
-            ArrayAdapter(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                systems.map { it.title },
-            )
-        spinner.setSelection(systems.indexOf(system))
-        root.addView(spinner)
-        spinner.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onNothingSelected(p: AdapterView<*>?) {}
-
-                override fun onItemSelected(p: AdapterView<*>?, v: View?, position: Int, id: Long) {
-                    val next = systems[position]
-                    if (next != system) {
-                        system = next
-                        coreId = CoreCatalog.ALL.first { it.system() == system }.id()
-                        refreshPad()
-                        refreshLibrary()
-                    }
+                onRequestTree = { initial ->
+                    StorageAccess.selectDirectory(this@PlayActivity, 42, initial)
                 }
+                onError = { message("Storage", it) }
             }
-        val actions = LinearLayout(this)
-        root.addView(actions)
-        actions.addView(
-            PlayUi.button(this, "Core / firmware") { coreSettings() },
-            LinearLayout.LayoutParams(0, -2, 1f),
-        )
-        actions.addView(
-            PlayUi.button(this, "Edit controls") { editControls() },
-            LinearLayout.LayoutParams(0, -2, 1f),
-        )
-        val scroll = ScrollView(this)
-        list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        scroll.addView(list)
-        root.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
-        pad = PadView(this)
-        pad.onGeometry = { refreshPad() }
-        pad.onKeys = { s, k ->
-            digital.update(s, k)
-            pad.pressed = digital.held()
-            pad.invalidate()
-        }
-        root.addView(pad, LinearLayout.LayoutParams(-1, 0, 1.4f))
-        refreshPad()
-        refreshLibrary()
+        root.addView(browser, LinearLayout.LayoutParams(-1, 0, 1f))
+        if (hasStorage() && intent?.action !in listOf(Intent.ACTION_VIEW, Intent.ACTION_SEND))
+            showPage(page)
+        else browser.open()
     }
 
-    private fun refreshPad() {
-        if (!::pad.isInitialized) return
-        val portrait = resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
-        pad.system = system
-        pad.controls = store.layouts(system, portrait)
-        if (pad.width > 0 && pad.height > 0)
-            pad.screens =
-                ScreenLayout.fit(
-                    system,
-                    pad.width.toDouble(),
-                    pad.height.toDouble(),
-                    portrait,
-                    store.gap(system),
+    private fun setupMenu() {
+        AlertDialog.Builder(this)
+            .setTitle("Setup")
+            .setItems(
+                arrayOf(
+                    "Core / firmware",
+                    "Edit controller layouts",
+                    "Display / controllers / about",
+                    if (browser.breadcrumbsEnabled) "Hide breadcrumb trail"
+                    else "Show breadcrumb trail",
+                    "Internal storage access",
                 )
-        pad.invalidate()
+            ) { _, n ->
+                when (n) {
+                    0 -> setupSystem { coreSettings() }
+                    1 -> setupSystem { editControls() }
+                    2 -> settings()
+                    3 -> {
+                        browser.breadcrumbsEnabled = !browser.breadcrumbsEnabled
+                    }
+                    4 -> withStorage { showPage(page) }
+                }
+            }
+            .show()
+    }
+
+    private fun setupSystem(action: () -> Unit) {
+        val systems = Console.values()
+        AlertDialog.Builder(this)
+            .setTitle("Configure system")
+            .setItems(systems.map { it.title }.toTypedArray()) { _, i ->
+                system = systems[i]
+                coreId = store.preferredCore(system)
+                action()
+            }
+            .show()
+    }
+
+    private fun hasStorage(): Boolean =
+        if (Build.VERSION.SDK_INT >= 30) Environment.isExternalStorageManager()
+        else
+            checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_GRANTED
+
+    private fun withStorage(action: () -> Unit) {
+        if (hasStorage()) {
+            action()
+            return
+        }
+        storageAction = action
+        AlertDialog.Builder(this)
+            .setTitle("Internal storage access")
+            .setMessage(
+                "InfiniPlay keeps game links in Internal storage/infini/play. Allow file access to use Recents and Favorites."
+            )
+            .setPositiveButton("Allow") { _, _ ->
+                if (Build.VERSION.SDK_INT >= 30) {
+                    val intent =
+                        Intent(
+                            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                            Uri.parse("package:$packageName"),
+                        )
+                    runCatching { startActivityForResult(intent, 43) }
+                        .onFailure {
+                            startActivityForResult(
+                                Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
+                                43,
+                            )
+                        }
+                } else
+                    requestPermissions(
+                        arrayOf(
+                            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                            android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        ),
+                        44,
+                    )
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                storageAction = null
+                incoming = null
+            }
+            .setOnCancelListener {
+                storageAction = null
+                incoming = null
+            }
+            .show()
+    }
+
+    private fun storageResult() {
+        val action = storageAction
+        storageAction = null
+        if (hasStorage()) action?.invoke()
+        else
+            message(
+                "Storage access",
+                "File access is needed to keep links in Internal storage/infini/play. You can retry from Setup.",
+            )
+    }
+
+    private fun showPage(next: String) {
+        if (next != "open" && !hasStorage()) {
+            withStorage { showPage(next) }
+            return
+        }
+        page = next
+        work({
+            if (next == "open") null
+            else {
+                collections.initialize(store.games())
+                Uri.fromFile(collections.directory(next))
+            }
+        }) { directory ->
+            browser.sortByModified = next == "recents"
+            browser.open(
+                directory,
+                if (next == "open") "Virtual root" else next.replaceFirstChar { it.uppercase() },
+            )
+        }
     }
 
     private fun refreshLibrary() {
-        list.removeAllViews()
-        val games = store.games().filter { it.system == system }
-        list.addView(
-            PlayUi.label(
-                this,
-                if (busy) "Importing…"
-                else if (games.isEmpty())
-                    "Import a game to begin. M3U playlists keep multi-disc games together."
-                else "${games.size} games · ${CoreCatalog.get(coreId).title()}",
-            )
-        )
-        for (g in games) list.addView(
-            PlayUi.button(this, "▶  ${g.name}") {
-                if (!busy) {
-                    pendingGame = g.id
-                    launchPending()
+        if (::statusText.isInitialized) statusText.text = if (busy) "Opening…" else ""
+    }
+
+    private data class Opened(
+        val item: SelectionItem,
+        val hint: com.infiniplay.core.Console?,
+        val detected: com.infiniplay.core.Console?,
+    )
+
+    private fun openSelection(
+        item: SelectionItem,
+        favorite: Boolean? = null,
+        play: Boolean = true,
+    ) {
+        if (!hasStorage()) {
+            withStorage { openSelection(item, favorite, play) }
+            return
+        }
+        if (favorite != null) {
+            changeFavorite(item, favorite)
+            return
+        }
+        work({
+            var selected = item
+            var hint: com.infiniplay.core.Console? = null
+            val seen = hashSetOf<String>()
+            repeat(8) {
+                if (
+                    selected.name.endsWith(".iflink", true) ||
+                        selected.mimeType == FileShortcut.MIME
+                ) {
+                    check(seen.add(selected.authoritativeUri.toString())) { "Cyclic game link" }
+                    val link = FileShortcut.read(this, selected.contentUri)
+                    hint =
+                        link.system?.let {
+                            runCatching { com.infiniplay.core.Console.valueOf(it) }.getOrNull()
+                        }
+                    val source =
+                        InfiniSelect.requireSource(
+                            this,
+                            link.targetUri,
+                            link.displayName,
+                            link.mimeType,
+                        )
+                    selected =
+                        SelectionItem(
+                            source.contentUri,
+                            source.displayName ?: link.displayName,
+                            source.mimeType ?: link.mimeType,
+                            source.sizeBytes,
+                            sourceReference = source.authoritativeUri.toString(),
+                        )
                 }
             }
-        )
+            require(!selected.name.endsWith(".iflink", true)) { "Too many nested game links" }
+            val known =
+                store.games().firstOrNull { it.source == selected.authoritativeUri.toString() }
+            val header =
+                StorageAccess.openRead(this, selected.contentUri).use { input ->
+                    val bytes = ByteArray(512)
+                    var offset = 0
+                    while (offset < bytes.size) {
+                        val n = input.read(bytes, offset, bytes.size - offset)
+                        if (n < 0) break
+                        offset += n
+                    }
+                    bytes.copyOf(offset)
+                }
+            Opened(selected, hint ?: known?.system, MediaSystem.identify(selected.name, header))
+        }) { opened ->
+            val detected = opened.detected ?: opened.hint
+            if (detected != null) finishOpening(opened.item, detected, favorite, play)
+            else {
+                val systems = com.infiniplay.core.Console.values()
+                AlertDialog.Builder(this)
+                    .setTitle("System for ${opened.item.name}")
+                    .setItems(systems.map { it.title }.toTypedArray()) { _, i ->
+                        finishOpening(opened.item, systems[i], favorite, play)
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun changeFavorite(item: SelectionItem, add: Boolean) {
+        work({
+            if (item.name.endsWith(".iflink", true) || item.mimeType == FileShortcut.MIME)
+                FileShortcut.read(this, item.contentUri)
+            else FileShortcut(item.authoritativeUri.toString(), item.name, item.mimeType)
+        }) { link ->
+            val selected =
+                link.system?.let { runCatching { Console.valueOf(it) }.getOrNull() }
+                    ?: MediaSystem.identify(link.displayName, byteArrayOf())
+                    ?: store.games().firstOrNull { it.source == link.targetUri }?.system
+            fun apply(system: Console) {
+                work({ collections.favorite(link, system, add) }) {
+                    browser.refresh()
+                    Toast.makeText(
+                            this,
+                            if (add) "Added to favorites" else "Favorite removed",
+                            Toast.LENGTH_SHORT,
+                        )
+                        .show()
+                }
+            }
+            if (selected != null) apply(selected)
+            else {
+                val systems = Console.values()
+                AlertDialog.Builder(this)
+                    .setTitle("System for ${link.displayName}")
+                    .setItems(systems.map { it.title }.toTypedArray()) { _, i -> apply(systems[i]) }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        }
+    }
+
+    private fun finishOpening(
+        item: SelectionItem,
+        selected: com.infiniplay.core.Console,
+        favorite: Boolean?,
+        play: Boolean,
+    ) {
+        work({
+            collections.initialize(store.games())
+            val game =
+                store.games().firstOrNull {
+                    it.source == item.authoritativeUri.toString() && it.system == selected
+                } ?: MediaImport(this).game(item, selected).also { store.addGame(it) }
+            collections.directory("favorites", game.system)
+            collections.link("recents", game)
+            if (favorite == true) collections.link("favorites", game)
+            if (favorite == false) collections.removeFavorite(game)
+            game
+        }) { game ->
+            system = game.system
+            coreId = store.preferredCore(system)
+            incoming = null
+            if (play) {
+                pendingGame = game.id
+                launchPending()
+            } else {
+                browser.refresh()
+                Toast.makeText(
+                        this,
+                        if (favorite == true) "Added to favorites" else "Favorite removed",
+                        Toast.LENGTH_SHORT,
+                    )
+                    .show()
+            }
+        }
+    }
+
+    private fun handleIncoming(data: Intent?) {
+        if (data?.action !in listOf(Intent.ACTION_VIEW, Intent.ACTION_SEND)) return
+        incoming = data
+        val uri =
+            if (data?.action == Intent.ACTION_SEND) {
+                @Suppress("DEPRECATION")
+                data.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                    ?: data.clipData?.getItemAt(0)?.uri
+            } else data?.data
+        if (uri == null) return
+        val result = Intent(data).setData(uri)
+        StorageAccess.persist(this, result)
+        work({ InfiniSelect.readResult(this, result).items.single() }) { openSelection(it) }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (busy) queuedIncoming = intent else handleIncoming(intent)
+    }
+
+    @Deprecated("Activity permission bridge")
+    override fun onRequestPermissionsResult(
+        request: Int,
+        permissions: Array<out String>,
+        results: IntArray,
+    ) {
+        super.onRequestPermissionsResult(request, permissions, results)
+        if (request == 44) storageResult()
+    }
+
+    @Deprecated("Activity back bridge")
+    override fun onBackPressed() {
+        if (!browser.goBack()) super.onBackPressed()
     }
 
     private fun settings() {
@@ -189,8 +437,15 @@ class PlayActivity : Activity() {
                     0 -> PlayUi.orientation(this)
                     1 -> PlayUi.controllerDialog(this, router)
                     2 ->
-                        if (system.dual()) PlayUi.gapDialog(this, pad, store) { refreshPad() }
-                        else message("Screen spacing", "Choose DS or 3DS to adjust the hinge gap.")
+                        setupSystem {
+                            if (system.dual())
+                                PlayUi.gapDialog(
+                                    this,
+                                    PadView(this).apply { system = this@PlayActivity.system },
+                                    store,
+                                ) {}
+                            else message("Screen spacing", "Screen spacing applies to DS and 3DS.")
+                        }
                     3 -> {
                         AlertDialog.Builder(this)
                             .setTitle("Virtual Boy display · next launch")
@@ -236,6 +491,7 @@ class PlayActivity : Activity() {
                 cores.indexOfFirst { it.id() == coreId },
             ) { d, n ->
                 coreId = cores[n].id()
+                store.preferredCore(system, coreId)
                 d.dismiss()
                 refreshLibrary()
                 val core = CoreCatalog.get(coreId)
@@ -336,7 +592,6 @@ class PlayActivity : Activity() {
         )
         box.addView(preview, LinearLayout.LayoutParams(-1, 0, 1f))
         dialog.setContentView(box)
-        dialog.setOnDismissListener { refreshPad() }
         dialog.show()
         dialog.window?.setLayout(-1, -1)
     }
@@ -346,6 +601,10 @@ class PlayActivity : Activity() {
             this,
             OpenRequest(
                 clientId = "infiniplay",
+                fileActions =
+                    if (picking == "game")
+                        listOf(SelectionAction("add_favorite", "Add to favorites"))
+                    else emptyList(),
                 displayName =
                     when (picking) {
                         "core" -> "Select Android arm64 Libretro core"
@@ -407,25 +666,38 @@ class PlayActivity : Activity() {
     @Deprecated("Android activity result bridge")
     override fun onActivityResult(request: Int, result: Int, data: Intent?) {
         super.onActivityResult(request, result, data)
+        if (request == 43) {
+            storageResult()
+            return
+        }
+        if (request == 42) {
+            if (result == RESULT_OK && data != null) {
+                StorageAccess.persist(this, data)
+                browser.open()
+            }
+            return
+        }
         if (request != 41) return
         if (result != RESULT_OK || data == null) {
             pendingGame = null
             return
         }
         StorageAccess.persist(this, data)
+        if (picking == "game") {
+            work({ InfiniSelect.readResult(this, data) }) { selected ->
+                if (selected.actionId == "add_favorite")
+                    openSelection(selected.items.single(), favorite = true, play = false)
+                else openSelection(selected.items.single())
+            }
+            return
+        }
         val kind = picking
-        val selectedSystem = system
         val selectedCore = coreId
         val expectedName = firmwareName
         work({
             val item = InfiniSelect.readResult(this, data).items.single()
             val importer = MediaImport(this)
             when (kind) {
-                "game" -> {
-                    val game = importer.game(item, selectedSystem)
-                    store.addGame(game)
-                    game.system.name
-                }
                 "core" -> {
                     val source =
                         InfiniSelect.requireSelectedSource(
@@ -477,17 +749,9 @@ class PlayActivity : Activity() {
                     ""
                 }
             }
-        }) { resultText ->
-            if (kind == "game") {
-                system = Console.valueOf(resultText)
-                coreId =
-                    if (system == selectedSystem) selectedCore
-                    else CoreCatalog.ALL.first { it.system() == system }.id()
-                build()
-            } else {
-                refreshLibrary()
-                if (pendingGame != null) launchPending()
-            }
+        }) {
+            refreshLibrary()
+            if (pendingGame != null) launchPending()
         }
     }
 
@@ -571,6 +835,11 @@ class PlayActivity : Activity() {
                         message("Unable to import", it.message ?: it.javaClass.simpleName)
                     }
                     refreshLibrary()
+                    if (!busy && queuedIncoming != null) {
+                        val next = queuedIncoming
+                        queuedIncoming = null
+                        handleIncoming(next)
+                    }
                 }
             }
         }
@@ -587,13 +856,12 @@ class PlayActivity : Activity() {
     override fun onStart() {
         super.onStart()
         router.start()
-        refreshPad()
         refreshLibrary()
+        if (::browser.isInitialized && hasStorage()) browser.refresh()
     }
 
     override fun onStop() {
         router.stop()
-        pad.release()
         super.onStop()
     }
 
@@ -604,7 +872,6 @@ class PlayActivity : Activity() {
 
     override fun onConfigurationChanged(config: Configuration) {
         super.onConfigurationChanged(config)
-        refreshPad()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent) =
@@ -614,6 +881,7 @@ class PlayActivity : Activity() {
         if (router.motion(event)) true else super.onGenericMotionEvent(event)
 
     override fun onSaveInstanceState(out: Bundle) {
+        out.putString("page", page)
         out.putString("system", system.name)
         out.putString("core", coreId)
         out.putString("pending", pendingGame)
