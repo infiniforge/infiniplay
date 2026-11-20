@@ -78,10 +78,8 @@ class PlayActivity : Activity() {
                 selectLinkDocuments =
                     true // Play owns the system hint stored in its .iflink documents.
                 onSelected = { if (!busy) openSelection(it) }
-                onFileAction = { action, item ->
-                    if (!busy)
-                        openSelection(item, favorite = action == "add_favorite", play = false)
-                }
+                fileActions = gameFileActions()
+                onFileAction = { action, item -> if (!busy) handleGameFileAction(action, item) }
                 onRequestOpen = {
                     picking = "game"
                     browse()
@@ -131,11 +129,7 @@ class PlayActivity : Activity() {
 
     private fun showPage(next: String) {
         page = next
-        browser.fileActions =
-            listOf(
-                if (next == "favorites") SelectionAction("remove_favorite", "Remove favorite")
-                else SelectionAction("add_favorite", "Add to favorites")
-            )
+        browser.fileActions = gameFileActions(next == "favorites")
         work({
             if (next == "open") null
             else {
@@ -149,6 +143,22 @@ class PlayActivity : Activity() {
                 if (next == "open") "Virtual root" else next.replaceFirstChar { it.uppercase() },
                 lockToDirectory = next != "open",
             )
+        }
+    }
+
+    private fun gameFileActions(favorites: Boolean = page == "favorites") =
+        listOf(
+            SelectionAction("open_emulator", "Open in emulator"),
+            if (favorites) SelectionAction("remove_favorite", "Remove favorite")
+            else SelectionAction("add_favorite", "Add to favorites"),
+        )
+
+    private fun handleGameFileAction(action: String?, item: SelectionItem) {
+        when (action) {
+            null,
+            "open_emulator" -> openSelection(item)
+            "add_favorite" -> openSelection(item, favorite = true, play = false)
+            "remove_favorite" -> openSelection(item, favorite = false, play = false)
         }
     }
 
@@ -226,7 +236,7 @@ class PlayActivity : Activity() {
             val directory = opened.directory
             if (directory != null) {
                 page = "open"
-                browser.fileActions = listOf(SelectionAction("add_favorite", "Add to favorites"))
+                browser.fileActions = gameFileActions(false)
                 browser.sortByModified = false
                 browser.open(Uri.parse(directory.targetUri), directory.displayName)
             } else {
@@ -526,9 +536,11 @@ class PlayActivity : Activity() {
             OpenRequest(
                 clientId = "infiniplay",
                 fileActions =
-                    if (picking == "game")
-                        listOf(SelectionAction("add_favorite", "Add to favorites"))
-                    else emptyList(),
+                    when (picking) {
+                        "game" -> gameFileActions(false)
+                        "firmware" -> listOf(SelectionAction("use_firmware", "Use as firmware"))
+                        else -> emptyList()
+                    },
                 displayName =
                     when (picking) {
                         "core" -> "Select Android arm64 Libretro core"
@@ -572,6 +584,7 @@ class PlayActivity : Activity() {
                                 "chd",
                                 "pbp",
                                 "iso",
+                                "zip",
                                 "bin",
                                 "rom",
                                 "img",
@@ -605,9 +618,7 @@ class PlayActivity : Activity() {
         StorageAccess.persist(this, data)
         if (picking == "game") {
             work({ InfiniSelect.readResult(this, data) }) { selected ->
-                if (selected.actionId == "add_favorite")
-                    openSelection(selected.items.single(), favorite = true, play = false)
-                else openSelection(selected.items.single())
+                handleGameFileAction(selected.actionId, selected.items.single())
             }
             return
         }

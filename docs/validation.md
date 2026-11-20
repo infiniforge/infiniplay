@@ -1,6 +1,6 @@
 # Validation
 
-Version 0.2.7 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
+Version 0.2.8 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
 
 The Termux native probe explicitly loads the staged `libc++_shared.so` by absolute path before opening any cores. It does not require `LD_LIBRARY_PATH` or `LD_PRELOAD`; APK libraries retain no Termux-specific RPATH. To verify the shell-independent path, run `env -u LD_LIBRARY_PATH -u LD_PRELOAD ./build.sh --max-workers=2 --console=plain`.
 
@@ -85,3 +85,13 @@ all thirteen native-core checks. APK signature, ARM64/16 KiB/native-dependency,
 notices and permission checks pass. Store 0.1.1 separately passes 124 JVM tests,
 including SFTP encoding of spaces/exclamation marks and Unicode-preserving
 filename round trips; its standalone AAR also builds.
+
+Version 0.2.8 adds caller-defined **Open in emulator** to the embedded and
+floating game pickers, and **Use as firmware** to firmware selection. It uses
+existing selector action IDs/results and Folder's actual long-press menu. Game
+ZIPs are accepted by the picker and staged intact; a compatible core is still
+required. No browsing, core, protocol or storage-permission changes were needed.
+The full standalone build passes 42 application tests, 26 selector JVM tests
+and all thirteen native-core checks/generated programs. APK ARM64/16 KiB,
+portable dependency, notices, permission and signature checks pass. The new
+long-press paths still need touch confirmation on the user's device.

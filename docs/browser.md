@@ -6,7 +6,7 @@ Selecting a game immediately stages necessary core working content and starts pl
 
 The old private library is seeded into shared recent links on first collection setup; game IDs, working copies and saves are kept.
 
-Opened sources get version-1 `.iflink` files in their system's recent directory. Repeated opens reuse the same source link and update its modification time. Links target original authoritative resources rather than expiring access relays; they do not contain ROM data. Existing user-named links are reused too. Long-press a file in Recents for Add to favorites, or in Favorites for Remove favorite. InfiniPlay supplies these actions through the reusable InfiniSelect `fileActions`/`onFileAction` hooks; the selector only renders and dispatches them. The floating game picker receives the same caller-defined Add to favorites action. Favorites actions only read/write the link; they do not launch, import or require access to the game target. Removing a favorite deletes only its link. Cyclic, oversized or over-deep links fail visibly.
+Opened sources get version-1 `.iflink` files in their system's recent directory. Repeated opens reuse the same source link and update its modification time. Links target original authoritative resources rather than expiring access relays; they do not contain ROM data. Existing user-named links are reused too. Long-press any game file or game shortcut for **Open in emulator**, including ISO images and ZIP archives. This returns the whole selected file to Play's normal source-resolution, system/core selection, recent-link, firmware and launch pipeline. A normal tap on a browsable container still enters it in Folder. The long-press menu also offers Add to favorites, or Remove favorite on the Favorites page. InfiniPlay supplies these actions through the reusable InfiniSelect `fileActions`/`onFileAction` hooks; Folder renders the menu and the gateway returns the action ID. The floating game picker receives the same Open in emulator and Add to favorites actions. The firmware picker offers **Use as firmware**, so a BIOS ZIP or disk-image filename can be selected as a whole file without entering it. Firmware selection continues through size/archive validation; it never launches as a game. Favorites actions only read/write the link; they do not launch, import or require access to the game target. Removing a favorite deletes only its link. Cyclic, oversized or over-deep links fail visibly.
 
 InfiniPlay declares no shared-storage or all-files permissions and shows no storage permission prompt. InfiniSelect embeds Folder and requests collection writes from it, which uses its existing access. No Folder tree grant is required. The verified caller package scopes writes to infini/play. If Folder is absent, Android file selection/granted SAF sources remain available and collections are app-private; they switch to shared storage when Folder is available. An old installed Folder must be upgraded to support this API.
 
@@ -40,3 +40,9 @@ Version 0.2.7 pins InfiniSelect 0.2.4 so .iflink targets with legacy raw spaces
 or other Android resource path characters survive parsing and JSON round trips.
 Folder 0.1.12 emits correctly encoded SFTP URIs for newly listed files. Display
 filenames keep their spaces; URI serialization and resource access stay distinct.
+
+Version 0.2.8 adds these explicit whole-file actions using the existing selector
+contract; it does not change Folder or introduce a second file browser. ZIPs
+remain intact when staged. The selected core must support their contents:
+Geolith still requires `.neo` Neo Geo cartridges, and this change does not add
+MAME/FinalBurn ZIP ROM-set emulation.
