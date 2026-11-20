@@ -20,3 +20,10 @@ InfiniPlay 0.2.4 pins InfiniSelect 0.2.1. Its embedded callback crosses the app
 boundary as Android's plain ResultReceiver, preventing Folder from trying to
 load a private InfiniPlay callback class during Bundle unmarshalling. Protocol
 version 1 and Folder-owned browsing remain unchanged.
+
+In 0.2.5, Recents and Favorites set InfiniSelect's `lockToDirectory` option for
+their collection directories. Folder keeps breadcrumbs, Back and restored
+surface state inside that navigation root, including load-error recovery. Open
+clears the lock and starts at Virtual root. The gateway places the embedded
+surface above the host window for real touch input, and Folder removes its
+floating-frame elevation/insets when embedded.

@@ -48,7 +48,7 @@ dependencies.lock.json
   "repositories": {
     "libinfiniselect": {
       "url": "https://github.com/infiniforge/libinfiniselect.git",
-      "commit": "7eff1a1803868df2927c087423042b3fb9e64c80"
+      "commit": "b3474a0843df91224fb4af6cc55f80c9d1565cb6"
     },
     "libinfinistream": {
       "url": "https://github.com/infiniforge/libinfinistream.git",

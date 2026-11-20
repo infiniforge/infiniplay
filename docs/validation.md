@@ -1,6 +1,6 @@
 # Validation
 
-Version 0.2.4 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
+Version 0.2.5 was built on Android ARM64/Termux with JDK 21, Gradle 9.7.1, AGP 8.9.2, Kotlin 2.2.20, SDK 36 and Clang 21. The root `./build.sh --max-workers=2 --console=plain` runs the independent build and tests. Desktop NDK construction is configured but has not been exercised here.
 
 The Termux native probe explicitly loads the staged `libc++_shared.so` by absolute path before opening any cores. It does not require `LD_LIBRARY_PATH` or `LD_PRELOAD`; APK libraries retain no Termux-specific RPATH. To verify the shell-independent path, run `env -u LD_LIBRARY_PATH -u LD_PRELOAD ./build.sh --max-workers=2 --console=plain`.
 
@@ -46,3 +46,15 @@ The full 0.2.4 Play build passed 42 portable application tests, 19 selector JVM
 tests and all thirteen native-core probes/generated-program checks. APK
 verification passed ARM64/16 KiB/native-dependency and notices checks; its
 signature verifies and its manifest declares no permissions.
+
+The 0.2.5 browser update pins InfiniSelect 0.2.2 and requires Folder 0.1.9 for
+locked collection roots and a flat embedded frame. Recents/Favorites use locked
+roots; Open uses unrestricted Virtual root. The Android instrumentation suite
+now injects physical taps instead of accessibility click actions, hosts the
+browser away from screen origin, and covers locked-root Back, surface
+restoration and switching back to Open. Its APK compiles; execution and visual
+alignment confirmation remain pending on an attached device.
+
+The full 0.2.5 Play build passed 42 portable application tests, 19 selector JVM
+tests and all thirteen native-core checks. The signed APK verifies ARM64,
+16 KiB native alignment, portable dependencies, notices and no permissions.

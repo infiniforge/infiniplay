@@ -147,6 +147,7 @@ class PlayActivity : Activity() {
             browser.open(
                 directory,
                 if (next == "open") "Virtual root" else next.replaceFirstChar { it.uppercase() },
+                lockToDirectory = next != "open",
             )
         }
     }
