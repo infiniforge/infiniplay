@@ -12,8 +12,8 @@ android {
         applicationId = "com.infiniplay"
         minSdk = 26
         targetSdk = 35
-        versionCode = 14
-        versionName = "0.4.1"
+        versionCode = 15
+        versionName = "0.4.2"
         ndk { abiFilters.add("arm64-v8a") }
         if (!termuxNative) externalNativeBuild { cmake { arguments += "-DANDROID_STL=c++_static" } }
     }

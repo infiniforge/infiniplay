@@ -55,7 +55,7 @@ Sources: [mGBA](https://github.com/libretro/mgba),
 [Beetle WonderSwan](https://github.com/libretro/beetle-wswan-libretro).
 
 
-InfiniPlay 0.4.1 adds a per-game Bob deinterlacing toggle for N64. It starts off because Bob can soften progressive video; turn it on for visible combing.
+InfiniPlay 0.4.2 adds a per-game Bob deinterlacing toggle for N64. It starts off because Bob can soften progressive video; turn it on for visible combing.
 
 The user confirmed N64 and DS playback on 2026-11-20. PlayStation, PSP and 3DS
 remain implemented but unconfirmed on Android with retail games. N64 and PSP

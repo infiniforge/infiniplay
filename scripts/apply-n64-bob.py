@@ -72,10 +72,6 @@ replace(
     "    auto shaders = ShaderManager::getShader(requestedShaderConfig);\n\n" + bob + "\n    shadersChain = {};",
 )
 replace(
-    "\n}\n\nfloat Video::getScreenDensity()",
-    "\n    playN64BobAdvanceField();\n}\n\nfloat Video::getScreenDensity()",
-)
-replace(
     "        glUniform1f(shader.gScreenDensityHandle, getScreenDensity());",
     """        glUniform1f(shader.gScreenDensityHandle, getScreenDensity());
         if (playN64BobEnabled) {
@@ -102,6 +98,23 @@ replace(
         isDirty = true;""",
     """        renderer->onNewFrame(data, width, height, pitch);
         isDirty = true;
-        playN64BobMarkFrame();""",
+        playN64BobSetFieldParity(static_cast<int>(pitch & 1));""",
 )
 path.write_text(s)
+
+# The host receives Mupen's actual VI field marker through the unused pitch
+# field on hardware-frame callbacks, keeping bob sampling aligned with GLideN64.
+core_source = ROOT / "third_party/mupen64plus/libretro/libretro.c"
+core_output = ROOT / "build/native-source/mupen64plus-libretro.c"
+core_text = core_source.read_text()
+old_callback = "video_cb(RETRO_HW_FRAME_BUFFER_VALID, retro_screen_width, retro_screen_height, 0);"
+new_callback = "video_cb(RETRO_HW_FRAME_BUFFER_VALID, retro_screen_width, retro_screen_height,\n                   gfx_info.VI_V_CURRENT_LINE_REG ? (*gfx_info.VI_V_CURRENT_LINE_REG & 1u) : 0u);"
+assert core_text.count(old_callback) == 1
+core_output.write_text(core_text.replace(old_callback, new_callback))
+
+manifest = ROOT / "build/native-source/extra-cores.cmake"
+manifest_text = manifest.read_text()
+old_source = str(core_source.resolve())
+new_source = str(core_output.resolve())
+assert manifest_text.count(old_source) == 1
+manifest.write_text(manifest_text.replace(old_source, new_source))

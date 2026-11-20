@@ -82,7 +82,7 @@ The inventory contains 10 applications (7 with standalone builds and 3 planned p
 
 #### [infiniwave](https://github.com/infiniforge/infiniwave)
 
-**State:** active · **Build:** standalone app build · **Versions:** no published release verified; build declares `0.4.1`
+**State:** active · **Build:** standalone app build · **Versions:** no published release verified; build declares `0.4.2`
 
 **Purpose:** Standalone Android multitrack audio editor and parameter-based sound-design workspace inspired by Audacity. Owns multitrack waveform editing, compact toolbars and navigable tool dialogs, selection deletion, anchored workspace pinch zoom across tracks, explicit single-track edit controls, chosen-channel split/recombine and mono mixing, continuous playback with live mute/solo, immutable projects and history, recovery, versioned JSON synthesis profiles and SAF exports. Uses libinfinisound for portable decoding and PCM effects (polarity, peak/DC normalization, filters and gating), and libinfinisynth for synthesis. Infinifolder remains optional. Recording, plugin effects, spectral denoising, automation and complete Audacity parity remain planned.
 
@@ -124,7 +124,7 @@ The inventory contains 10 applications (7 with standalone builds and 3 planned p
 
 #### [infiniplay](https://github.com/infiniforge/infiniplay)
 
-**State:** active · **Build:** standalone app build · **Versions:** no published release verified; build declares `0.4.1`
+**State:** active · **Build:** standalone app build · **Versions:** no published release verified; build declares `0.4.2`
 
 **Purpose:** Standalone Android emulator frontend running Libretro cores inside the application. Owns the game library, controller layouts and USB input, session lifecycle, source imports, firmware launch gates and per-game saves. Compiled core bundle covers selected systems through the SNES era including Sega add-ons and Neo Geo, plus GBA, Neo Geo Pocket/Color, WonderSwan/Color and bundled N64/PlayStation/PSP/DS/3DS profiles. PSP core data ships with the app; 3DS requires decrypted content and GLES 3.2. gpSP and melonDS remain import-only alternatives. Emulation remains in independently pinned third-party cores. N64 includes an optional per-game bob deinterlacing pass. Main UI embeds InfiniSelect with Recents/Favorites/Open, hamburger setup, automatic system dispatch and immediate View/Share launch. Shared .iflink collections live under internal storage/infini/play; native working copies and saves stay private. Declares no broad storage permissions: listings and shared collection writes go through the InfiniSelect/Folder relay; absent Folder, local app-private link collections and normal Android file selection remain available.
 

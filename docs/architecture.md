@@ -12,7 +12,7 @@ Removable media uses standard Libretro callbacks on the emulation thread. The sm
 
 `LaunchProgress` tracks selection ownership, outstanding worker tasks and the emulator handoff on the main thread. Chained callbacks finish their current task only after scheduling follow-up work, keeping the browser blocked throughout. Selection ownership persists across firmware prompts, while the visual loading window only covers active work/handoff. `LoadingOverlay` uses a separate modal Android window so it also covers Folder's embedded topmost SurfaceView; Session dismisses its loader on the first rendered frame or a core error.
 
-N64 Bob deinterlacing is stored per game. The host adds a full-screen GLES pass after GLideN64 and samples one alternating field, interpolating the omitted scanlines. It leaves emulation cadence unchanged; progressive titles can retain full vertical detail by leaving it off.
+N64 Bob deinterlacing is stored per game. The host adds a full-screen GLES pass after GLideN64, uses the VI field marker passed by Mupen64Plus-Next to select the active field, and interpolates the omitted scanlines. It leaves emulation cadence unchanged; progressive titles can retain full vertical detail by leaving it off.
 
 Fresh atomic JSON reads keep launcher and emulator-process settings consistent. Content import uses a single worker and staged copies; it cannot execute a half-imported game. UI errors retain a recoverable launch path. Additional cores must be compatible Android ARM64 ELF shared libraries; ELF screening checks architecture, not trust or core ABI correctness.
 
