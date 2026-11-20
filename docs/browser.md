@@ -35,3 +35,8 @@ game target can still return its original .iflink to preserve system hints. A
 directory link delivered directly to Play opens the Folder-owned browser at
 that directory. Directory targets do not enter Play's game Favorites workflow.
 URI handlers and all browsing remain Folder responsibilities.
+
+Version 0.2.7 pins InfiniSelect 0.2.4 so .iflink targets with legacy raw spaces
+or other Android resource path characters survive parsing and JSON round trips.
+Folder 0.1.12 emits correctly encoded SFTP URIs for newly listed files. Display
+filenames keep their spaces; URI serialization and resource access stay distinct.

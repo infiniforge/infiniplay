@@ -1,6 +1,6 @@
 # InfiniPlay
 
-Standalone Android emulator frontend that runs Libretro cores inside the app. Version 0.2.6 targets ARM64 Android 8.0+ and OpenGL ES 3.0. RetroArch is not required.
+Standalone Android emulator frontend that runs Libretro cores inside the app. Version 0.2.7 targets ARM64 Android 8.0+ and OpenGL ES 3.0. RetroArch is not required.
 
 - Thirteen compiled-in cores cover [systems through the SNES era](docs/systems.md), including Atari 2600/5200/7800/Lynx, SG-1000/Master System/Game Gear, NES/FDS, GB/GBC, PC Engine/CD, Mega Drive/CD/32X, SNES, Neo Geo AES/MVS and Virtual Boy.
 - USB/Bluetooth Android HID gamepads and joysticks, up to four player assignments, touch D-pads, sticks and buttons.
